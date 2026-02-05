@@ -1,0 +1,68 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+
+num_pilot = 1
+avg_wt_person = 200 # lb
+total_wt_explosives = 10000 # lb
+
+W_crew = num_pilot * (avg_wt_person) # lb
+print("W_crew: " + str(W_crew) + " lb")
+
+W_payload = total_wt_explosives # lb
+print("W_payload: " + str(W_payload) + " lb")
+
+L_D_max = 21.5
+L_D = 0.94 * L_D_max       # Fighter cruise L/D
+c = 0.88                   # lb/(lbf*hr) military turbofan
+V = 500                    # knots
+
+W1_W0 = 0.970  # Takeoff / warm-up
+W2_W1 = 0.930  # Climb
+W5_W4 = 0.995  # Landing
+
+R = 1000 # nmi (combat radius)
+E = 20/60 # hr loiter
+
+W3_W2 = np.exp((-R * c) / (V * L_D))  # Cruise condition
+print("Cruise Fuel Fraction (W3/W2): " + str(round(W3_W2, 3)))
+
+W4_W3 = np.exp((-E * c) / (L_D))      # Loiter condition
+print("Loiter Fuel Fraction (W4/W3): " + str(round(W4_W3, 3)))
+
+W5_W0 = W5_W4 * W4_W3 * W3_W2 * W2_W1 * W1_W0
+print("Final Fuel Fraction (W5/W0): " + str(round(W5_W0, 3)))
+
+Wf_W0 = (1 - W5_W0) * 1.06
+print("Total Fuel Fraction (Wf_W0): " + str(round(Wf_W0, 3)))
+
+W0 = 65000  # Initial guess, lb (F/A-18E class)
+W0_history = []
+err = 1e-6
+delta = 2 * err
+
+A = 2.34
+C = -0.13
+
+while delta > err:
+    W0_history.append(W0)
+    We_W0 = A * W0**C
+    W0_new = (W_crew + W_payload) / (1 - Wf_W0 - We_W0)
+    delta = abs(W0_new - W0) / abs(W0_new)
+    W0 = W0_new
+
+W0_history = np.array(W0_history)
+
+plt.figure(figsize=(8,4))
+plt.title('Weight Estimate Convergence')
+plt.xlabel("Iteration")
+plt.ylabel("W0 (lb)")
+plt.plot(W0_history, label='W0', linestyle='-', linewidth=2, marker=None, markersize=8)
+plt.grid(True)
+plt.legend(loc='best')
+plt.show()
+
+We = We_W0*W0
+print("Empty Weight: " + str(round(We)) + " lb")
+print("Our regression's Empty Weight Fraction (We/W0): " + str(round(We/W0, 3)))
+print("Takeoff Gross Weight: " + str(round(W0)) + " lb")
