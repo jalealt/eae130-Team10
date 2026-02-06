@@ -74,7 +74,7 @@ WS_stall = coef_stall * np.ones(60)
 
 # Climb Constraint
 TW_climb_uncorr = (k_s**2+CD_0)/CLmax_climb + k*CLmax_climb/k_s**2 + G
-TW_climb = (1/0.8) * (1/0.94) * TW_climb_uncorr * np.ones(60)
+TW_climb = (1/0.8) * TW_climb_uncorr * np.ones(60)
 
 # Ceiling Constraint
 TW_ceiling = 2*np.sqrt(k*CD_0) * np.ones(60)
@@ -103,7 +103,7 @@ plt.plot(WS, TW_climb, label = 'Climb', linestyle = '-', linewidth =2)
 plt.plot(WS, TW_ceiling, label = 'Ceiling', linestyle = '-', linewidth =2)
 plt.plot(WS, TW_cruise, label = 'Cruise', linestyle = '-', linewidth =2)
 
-plt.plot(110, 1.30, label = 'Design Point', marker = 'o')
+plt.plot(108, 1.25, label = 'Design Point', marker = 'o')
 
 plt.ylim(0, 3)
 plt.legend(loc='best')
