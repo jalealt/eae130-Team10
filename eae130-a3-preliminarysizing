@@ -1,0 +1,110 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+
+# Constants
+W_to = 46267 # lbs
+W_la = 0.89 * W_to # lbs
+W_cr = 0.9021 * W_to # lbs
+
+T_to = 0.6 * W_to # Raymer pg. 117
+T_cr = 0.5 * T_to # Raymer pg. 122
+
+S_ref = 815.54 # ft^2
+S_wet = 1947.38 # ft^2
+
+CD_0 = 0.01136
+e = 0.8
+AR = 3.548
+n = 8
+
+CLmax_to = 1.8 # Takeoff
+CLmax_la = 2.4 # Landing
+CLmax_clean = 1.4
+CLmax_climb = 1.8
+
+rho_sl = 0.0023769 # slug/ft^3
+rho_20k = 12.67*10**-4 # slug/ft^3
+rho_30k = 10.66*10**-4 # slug/ft^3
+v_stall = np.sqrt((2/rho_sl*CLmax_clean)*W_to/S_ref)
+v_approach = 1.1 * v_stall
+v_engage = 1.05 * v_approach
+
+# Catapult minimum end airspeed
+# Deadload endspeed
+# Capacitor selector valve
+
+k_s = 1.2
+v_climb = k_s * v_stall # Roskam pg. 996 Table F.2
+climb_rate = 200/60 # ft/s
+G = climb_rate/v_climb
+k = 1/(np.pi*e*AR)
+
+WS = np.linspace(1,300,60)
+
+# Launch Constraint
+
+# Recovery Constraint
+
+# Air to Air Combat Sustained Turn Constraint
+# Assume aircraft is flying at 1.5 x SL stall speed at 30k ft
+q_turn = 0.5*rho_20k*(1.5*v_stall)**2
+TW_turn = q_turn*CD_0/WS + (k*n**2/q_turn)*WS
+
+# Air to Air Combat Dash Constraint
+# Aircraft is flying at Mach 2.0 at 30k ft according to RFP
+WS_cruise = (W_cr/W_to)*WS
+M_atadash = 2
+v_atadash = 2*993 # ft/s
+q_atadash = 0.5*rho_30k*(v_atadash)**2
+TW_cruise_atadash = q_atadash*CD_0/WS_cruise + (k/q_atadash)*WS_cruise
+TW_atadash = (W_cr/W_to)/(T_cr/T_to)*TW_cruise_atadash
+
+# Strike Dash Constraint
+# Aircraft is flying at Mach 0.9 at SL according to RFP
+M_strikedash = 0.9
+v_strikedash = 0.9*1116 # ft/s
+q_strikedash = 0.5*rho_sl*(v_strikedash)**2
+TW_cruise_strikedash = q_strikedash*CD_0/WS_cruise + (k/q_strikedash)*WS_cruise
+TW_strikedash = (W_cr/W_to)/(T_cr/T_to)*TW_cruise_strikedash
+
+# Stall Constraint
+coef_stall = 0.5*rho_sl*(v_stall)**2*CLmax_clean
+WS_stall = coef_stall * np.ones(60)
+
+# Climb Constraint
+TW_climb_uncorr = (k_s**2+CD_0)/CLmax_climb + k*CLmax_climb/k_s**2 + G
+TW_climb = (1/0.8) * (1/0.94) * TW_climb_uncorr * np.ones(60)
+
+# Ceiling Constraint
+TW_ceiling = 2*np.sqrt(k*CD_0) * np.ones(60)
+
+# Cruise Constraint
+# Assume aircraft is flying at Mach 0.8 at 30k ft
+M_cruise = 0.8
+v_cruise = 0.8*993 # ft/s
+q_cruise = 0.5*rho_30k*(v_cruise)**2
+TW_cruise_uncorr = q_cruise*CD_0/WS_cruise + k/q_cruise*WS_cruise
+TW_cruise = (W_cr/W_to)/(T_cr/T_to)*TW_cruise_uncorr
+
+# Create Plot
+plt.figure(figsize=(8,4))
+plt.title('T/W vs. W/S')
+plt.xlabel("W/S $(lb/ft^2)$")
+plt.ylabel("T/W")
+
+# Launch
+# Recovery
+plt.plot(WS, TW_turn, label = 'Air to Air Combat Sustained Turn', linestyle = '-', linewidth =2)
+plt.plot(WS, TW_atadash, label = 'Air to Air Combat Dash', linestyle = '-', linewidth =2)
+plt.plot(WS, TW_strikedash, label = 'Strike Dash', linestyle = '-', linewidth =2)
+plt.plot(WS_stall, np.linspace(0,3,60), label = 'Stall', linestyle = '-', linewidth =2)
+plt.plot(WS, TW_climb, label = 'Climb', linestyle = '-', linewidth =2)
+plt.plot(WS, TW_ceiling, label = 'Ceiling', linestyle = '-', linewidth =2)
+plt.plot(WS, TW_cruise, label = 'Cruise', linestyle = '-', linewidth =2)
+
+plt.plot(110, 1.30, label = 'Design Point', marker = 'o')
+
+plt.ylim(0, 3)
+plt.legend(loc='best')
+plt.show()
