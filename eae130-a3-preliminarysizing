@@ -43,14 +43,14 @@ climb_rate = 200/60 # ft/s
 G = climb_rate/v_climb
 k = 1/(np.pi*e*AR)
 
-WS = np.linspace(1,300,60)
+WS = np.linspace(1,300,300)
 
 # Launch Constraint
-WS_launch = (0.5*rho_sl*(v_wod_launch + v_cat_launch)**2*CLmax_to) / (1.21) * np.ones (60)
+WS_launch = (0.5*rho_sl*(v_wod_launch + v_cat_launch)**2*CLmax_to) / (1.21) * np.ones (300)
 
 # Recovery Constraint
 WS_landing_recovery = 0.5*rho_sl*(v_engage+v_wod_recovery)**2*CLmax_la
-WS_recovery = W_to / W_la * WS_landing_recovery * np.ones(60)
+WS_recovery = W_to / W_la * WS_landing_recovery * np.ones(300)
 
 # Air to Air Combat Sustained Turn Constraint
 # Assume aircraft is flying at 1.5x SL stall speed at 20k ft
@@ -77,14 +77,14 @@ TW_strikedash = (W_cr/W_to)/(T_cr/T_to)*TW_cruise_strikedash
 
 # Stall Constraint
 coef_stall = 0.5*rho_sl*(v_stall)**2*CLmax_clean
-WS_stall = coef_stall * np.ones(60)
+WS_stall = coef_stall * np.ones(300)
 
 # Climb Constraint
 TW_climb_uncorr = (k_s**2+CD_0)/CLmax_climb + k*CLmax_climb/k_s**2 + G
-TW_climb = (1/0.8) * TW_climb_uncorr * np.ones(60)
+TW_climb = (1/0.8) * TW_climb_uncorr * np.ones(300)
 
 # Ceiling Constraint
-TW_ceiling = 2*np.sqrt(k*CD_0) * np.ones(60)
+TW_ceiling = 2*np.sqrt(k*CD_0) * np.ones(300)
 
 # Cruise Constraint
 # Assume aircraft is flying at Mach 0.8 at 30k ft
@@ -100,18 +100,34 @@ plt.title('T/W vs. W/S')
 plt.xlabel("W/S $(lb/ft^2)$")
 plt.ylabel("T/W")
 
-plt.plot(WS_launch, np.linspace(0,3,60), label = 'Launch', linestyle = '-', linewidth = 2)
-plt.plot(WS_recovery, np.linspace(0,30,60), label = 'Recovery', linestyle = '-', linewidth = 2)
+plt.plot(WS_launch, np.linspace(0,3,300), label = 'Launch', linestyle = '-', linewidth = 2)
+plt.plot(WS_recovery, np.linspace(0,30,300), label = 'Recovery', linestyle = '-', linewidth = 2)
 plt.plot(WS, TW_turn, label = 'Air to Air Combat Sustained Turn', linestyle = '-', linewidth =2)
 plt.plot(WS, TW_atadash, label = 'Air to Air Combat Dash', linestyle = '-', linewidth =2)
 plt.plot(WS, TW_strikedash, label = 'Strike Dash', linestyle = '-', linewidth =2)
-plt.plot(WS_stall, np.linspace(0,3,60), label = 'Stall', linestyle = '-', linewidth =2)
+plt.plot(WS_stall, np.linspace(0,3,300), label = 'Stall', linestyle = '-', linewidth =2)
 plt.plot(WS, TW_climb, label = 'Climb', linestyle = '-', linewidth =2)
 plt.plot(WS, TW_ceiling, label = 'Ceiling', linestyle = '-', linewidth =2)
 plt.plot(WS, TW_cruise, label = 'Cruise', linestyle = '-', linewidth =2)
 
 plt.plot(108, 1.25, label = 'Design Point', marker = 'o')
 
+# Shade feasible region
+feasible = WS <= 111.19420261
+min_TW = np.maximum.reduce([
+    TW_climb,
+    TW_atadash
+])
+plt.fill_between (
+    WS[feasible],
+    min_TW[feasible],
+    3,
+    alpha = 0.25,
+    color = "grey",
+    label = "Feasible Region"
+)
+
 plt.ylim(0, 3)
 plt.legend(loc='best')
 plt.show()
+
