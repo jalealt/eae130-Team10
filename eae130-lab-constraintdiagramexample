@@ -1,0 +1,54 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+
+# Constants
+W_TO = 26622 # lb
+S_ref = 815.54 # ft^2
+S_wet = 1947.38 # ft^2
+AR = 3.548
+C_D0 = 0.01136
+Nz_design = 8
+rho = 0.0023769 # slug/ft^3
+rho_SL = 0.0023769 # slug/ft^3
+CL_max = 2
+e = 0.8
+
+WS = np.linspace(1,300,30)
+
+# Takeoff Constraint
+BFL = 5000 # ft
+TOP = BFL/37.5
+coef_takeoff = (rho/rho_SL)*CL_max*TOP
+TW_takeoff = WS/coef_takeoff
+
+# Landing Constraint
+coef_landing = ((rho/rho_SL)*CL_max/(80*0.65))*(BFL*0.6-450)
+TW_landing = coef_landing*np.ones(30)
+
+# Climb / Turn Constraint
+N_engines = 2
+k_s = 1.2
+G = 0.012
+coef_climb = (1/0.8) * (N_engines / (N_engines - 1)) * \
+            (k_s**2/CL_max*C_D0+CL_max/(k_s**2*np.pi*e*AR)+G)
+TW_climb = coef_climb*np.ones(30)
+
+# Dash / High-Speed Constraint
+v_dash = 1980 # ft/s
+q = (1/2)*rho*v_dash**2
+TW_dash = q*C_D0/WS + WS*(1/(q*np.pi*AR*e))
+
+# Create Plot
+plt.figure(figsize=(8,4))
+plt.title('T/W vs. W/S')
+plt.xlabel("W/S $(lb/ft^2)$")
+plt.ylabel("T/W")
+plt.plot(WS, TW_takeoff, label = 'Takeoff', linestyle = '-', linewidth =2)
+plt.plot(TW_landing, np.linspace(0,2,30), label = 'Landing', linestyle ='-', linewidth = 2)
+plt.plot(WS, TW_climb, label='Takeoff Climb', linestyle='-', linewidth=2)
+plt.plot(WS, TW_dash, label='Dash', linestyle='-', linewidth=2)
+plt.plot(95, 0.6, label='Design Point', marker="o")
+plt.ylim(0, 2)
+plt.legend(loc='best')
+plt.show()
