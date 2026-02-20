@@ -245,7 +245,7 @@ S_vt = 135.86
 S_wet_fuselage = 670.82
 num_engines = 1
 
-S_grid = np.arange(400, 1500, 10)
+S_grid = np.arange(400, 1500, 5)
 
 (cruise_curve,
  turn_curve,
@@ -282,7 +282,7 @@ plt.plot(S_grid, governing_curve,
          label="Governing Constraint (Max)",
          linewidth=3)
 
-plt.plot(500, 40179, label = 'Design Point', marker = 'o')
+plt.plot(485, 41642, label = 'Design Point', marker = 'o')
 
 plt.title("Converged T vs. S")
 plt.xlabel("Wing Area S (ft²)")
