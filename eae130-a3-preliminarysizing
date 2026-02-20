@@ -23,11 +23,11 @@ CLmax_la = 2.4 # Landing
 CLmax_clean = 1.4
 CLmax_climb = 1.8
 
-rho_sl = 0.0023769 # slug/ft^3
+rho_sl = 0.00219 # slug/ft^3 # Raymer pg. 131
 rho_20k = 12.67*10**-4 # slug/ft^3
-rho_30k = 10.66*10**-4 # slug/ft^3
-v_stall = np.sqrt((2/rho_sl*CLmax_clean)*W_to/S_ref)
-v_approach = 145 * 1.688 # ft/s
+rho_30k = 10.66*10**-4 # slug/ft^3 
+v_stall = np.sqrt((2/(rho_sl*CLmax_la))*W_to/S_ref) # ft/s
+v_approach = 1.1 * v_stall # ft/s
 v_engage = 1.05 * v_approach
 
 v_wod_launch = 0
@@ -75,13 +75,10 @@ q_strikedash = 0.5*rho_sl*(v_strikedash)**2
 TW_cruise_strikedash = q_strikedash*CD_0/WS_cruise + (k/q_strikedash)*WS_cruise
 TW_strikedash = (W_cr/W_to)/(T_cr/T_to)*TW_cruise_strikedash
 
-# Stall Constraint
-coef_stall = 0.5*rho_sl*(v_stall)**2*CLmax_clean
-WS_stall = coef_stall * np.ones(300)
-
 # Climb Constraint
-TW_climb_uncorr = (k_s**2+CD_0)/CLmax_climb + k*CLmax_climb/k_s**2 + G
-TW_climb = (1/0.8) * TW_climb_uncorr * np.ones(300)
+# TW_climb_uncorr = (k_s**2+CD_0)/CLmax_climb + k*CLmax_climb/k_s**2 + G
+TW_climb_uncorr = climb_rate/CLmax_climb*(CD_0/k)**(1/4)*(rho_sl/2)**(1/2)*(WS)**(-1/2)+2*(k*CD_0)**(1/2)
+TW_climb = (1/0.8) * TW_climb_uncorr
 
 # Ceiling Constraint
 TW_ceiling = 2*np.sqrt(k*CD_0) * np.ones(300)
@@ -105,17 +102,16 @@ plt.plot(WS_recovery, np.linspace(0,30,300), label = 'Recovery', linestyle = '-'
 plt.plot(WS, TW_turn, label = 'Air to Air Combat Sustained Turn', linestyle = '-', linewidth =2)
 plt.plot(WS, TW_atadash, label = 'Air to Air Combat Dash', linestyle = '-', linewidth =2)
 plt.plot(WS, TW_strikedash, label = 'Strike Dash', linestyle = '-', linewidth =2)
-plt.plot(WS_stall, np.linspace(0,3,300), label = 'Stall', linestyle = '-', linewidth =2)
-plt.plot(WS, TW_climb, label = 'Climb', linestyle = '-', linewidth =2)
 plt.plot(WS, TW_ceiling, label = 'Ceiling', linestyle = '-', linewidth =2)
+plt.plot(WS, TW_climb, label = 'Climb', linestyle = '-', linewidth =2)
 plt.plot(WS, TW_cruise, label = 'Cruise', linestyle = '-', linewidth =2)
 
-plt.plot(108, 1.25, label = 'Design Point', marker = 'o')
+plt.plot(110, 1.03, label = 'Design Point', marker = 'o')
 
 # Shade feasible region
-feasible = WS <= 111.19420261
+feasible = WS <= WS_recovery
 min_TW = np.maximum.reduce([
-    TW_climb,
+    TW_turn,
     TW_atadash
 ])
 plt.fill_between (
