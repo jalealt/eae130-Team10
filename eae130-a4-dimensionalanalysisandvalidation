@@ -256,10 +256,10 @@ S_grid = np.arange(400, 1500, 5)
  governing_curve,
  weight_curve) = outer_loop_thrust(S_grid)
 
-# 1. Calculate the Wing Loading (W/S) for every point
+# Calculate the Wing Loading (W/S) for every point
 actual_WS = weight_curve / S_grid
 
-# 2. Look for the first wing area that hits 110 or less
+# Look for the first wing area that hits 110 or less
 for i in range(len(S_grid)):
     if actual_WS[i] <= 110:
         # This is your design point
