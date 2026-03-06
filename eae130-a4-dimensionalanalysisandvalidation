@@ -13,7 +13,7 @@ print("W_crew:", W_crew, "lb")
 print("W_payload:", W_payload, "lb")
 
 # Fuel Fraction
-L_D_max = 21.5
+L_D_max = 9.2              # F15 Comparable Aircraft
 L_D = 0.94 * L_D_max
 c = 0.88
 V = 500
@@ -291,4 +291,5 @@ plt.grid(True)
 plt.legend(loc="center left", bbox_to_anchor=(1, 0.5))
 plt.tight_layout()
 plt.show()
+
 
