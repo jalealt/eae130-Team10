@@ -392,7 +392,18 @@ W0_design, _ = inner_loop_weight(
     num_engines, W_crew, W_payload, T_design
 )
 
-# 2. Print the results
+We_design = calculate_empty_weight(
+    S_design, S_ht, S_vt, S_wet_fuselage, 
+    W0_design, T_design, num_engines
+)
+
+# Add these lines to your print block
+print(f"Empty Weight (We): {We_design:,.2f} lb")
+print(f"Empty Weight Fraction (We/W0): {We_design / W0_design:.3f}")
+print(f"Fuel Weight (Wf): {W0_design - We_design - W_crew - W_payload:,.2f} lb")
+print("-" * 30)
+
+# Print the results
 print("-" * 30)
 print(f"DESIGN POINT RESULTS")
 print(f"Wing Area (S): {S_design} ft²")
