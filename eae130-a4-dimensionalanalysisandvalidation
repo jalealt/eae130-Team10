@@ -13,7 +13,7 @@ print("W_crew:", W_crew, "lb")
 print("W_payload:", W_payload, "lb")
 
 # Fuel Fraction
-L_D_max = 21.5
+L_D_max = 9.2              # F15 Comparable Aircraft
 L_D = 0.94 * L_D_max
 c = 0.88
 V = 500
@@ -127,6 +127,7 @@ def outer_loop_thrust(S_grid):
     strike_curve = []
     climb_curve = []
     ceiling_curve = []
+    takeoff_curve = []          # ADDED
     governing_curve = []
     weight_curve = []
 
@@ -166,7 +167,7 @@ def outer_loop_thrust(S_grid):
             # Air to Air Combat Sustained Turn Constraint
             CLmax_la = 2.4
 
-            v_stall = np.sqrt((2/(rho_sl*CLmax_la))*W_to/S_wing) # ft/s
+            v_stall = np.sqrt((2/(rho_sl*CLmax_la))*W_to/S_wing)
             v_turn = 1.5 * v_stall
 
             turn_rate = 10 / 57.3
@@ -202,14 +203,20 @@ def outer_loop_thrust(S_grid):
             # Ceiling Constraint
             TW_ceiling = 2 * np.sqrt(k * CD_0)
 
-            # Governing Constraint
+            # TAKEOFF CONSTRAINT (ADDED)
+            CLmax_TO = 2.0
+            S_TO = 1500
+            sigma = 1.0
+            TW_takeoff = (WS / (sigma * CLmax_TO)) * (1 / (S_TO * 0.6))
+
             TW_req = max(
                 TW_cruise,
                 TW_turn,
                 TW_atadash,
                 TW_strikedash,
                 TW_climb,
-                TW_ceiling
+                TW_ceiling,
+                TW_takeoff
             )
 
             T_req = TW_req * W0
@@ -219,13 +226,13 @@ def outer_loop_thrust(S_grid):
 
             T_total = T_req
 
-        # Store each constraint thrust curve
         cruise_curve.append(TW_cruise * W0)
         turn_curve.append(TW_turn * W0)
         dash_curve.append(TW_atadash * W0)
         strike_curve.append(TW_strikedash * W0)
         climb_curve.append(TW_climb * W0)
         ceiling_curve.append(TW_ceiling * W0)
+        takeoff_curve.append(TW_takeoff * W0)
 
         governing_curve.append(T_total)
         weight_curve.append(W0)
@@ -236,8 +243,79 @@ def outer_loop_thrust(S_grid):
             np.array(strike_curve),
             np.array(climb_curve),
             np.array(ceiling_curve),
+            np.array(takeoff_curve),
             np.array(governing_curve),
             np.array(weight_curve))
+
+def outer_loop_wing_area(T_grid):
+    
+    # Aircraft constants
+    e = 0.8
+    AR = 3.548
+    rho_sl = 0.00219
+
+    g = 32.17
+
+    k = 1 / (np.pi * e * AR)
+
+    # Constraint Curves Store
+    stall_curve = []
+    landing_curve = []
+    governing_curve_T = []
+    weight_curve_T = []
+
+    for T_total in T_grid:
+
+        S_req = 500
+
+        for _ in range(50):
+
+            S_0 = S_req
+
+            # Converge weight
+            W0, _ = inner_loop_weight(
+                60000,
+                S_0, S_ht, S_vt, S_wet_fuselage,
+                num_engines, W_crew, W_payload, T_total
+            )
+
+            WS = W0 / S_0
+
+            # Stall constraint (ADDED)
+            CLmax_clean = 1.8
+            V_stall_req = 150 * 1.687
+            WS_stall = 0.5 * rho_sl * V_stall_req**2 * CLmax_clean
+            S_stall = W0/WS_stall
+
+            # Landing constraint (ADDED)
+            CLmax_L = 2.6
+            V_land = 130 * 1.687
+            WS_land = 0.5 * rho_sl * V_land**2 * CLmax_L
+            S_land = W0/WS_land
+
+            WS_req = min(
+                WS_stall,
+                WS_land
+            )
+
+            S_req = 1/(WS_req)*W0
+
+            if abs(S_req - S_0) / (S_0) < 1e-4:
+                S_current = S_req
+                break
+
+            S_current = S_req
+
+        stall_curve.append(S_stall)
+        landing_curve.append(S_land)
+
+        governing_curve_T.append(S_current)
+        weight_curve_T.append(W0)
+
+    return(np.array(stall_curve),
+           np.array(landing_curve),
+           np.array(governing_curve_T),
+           np.array(weight_curve_T))
 
 # Plot Section
 S_ht = 173.50
@@ -245,7 +323,8 @@ S_vt = 135.86
 S_wet_fuselage = 670.82
 num_engines = 1
 
-S_grid = np.arange(400, 1500, 5)
+S_grid = np.arange(375, 700, 3)
+T_grid = np.arange(20000, 100000, 100)
 
 (cruise_curve,
  turn_curve,
@@ -253,21 +332,23 @@ S_grid = np.arange(400, 1500, 5)
  strike_curve,
  climb_curve,
  ceiling_curve,
+ takeoff_curve,
  governing_curve,
  weight_curve) = outer_loop_thrust(S_grid)
 
-# Calculate the Wing Loading (W/S) for every point
-actual_WS = weight_curve / S_grid
+(stall_curve,
+ landing_curve,
+ governing_curve_T,
+ weight_curve_T) = outer_loop_wing_area(T_grid)
 
-# Look for the first wing area that hits 110 or less
-for i in range(len(S_grid)):
-    if actual_WS[i] <= 110:
-        # This is your design point
-        print(f"Wing Area: {S_grid[i]} ft^2")
-        print(f"Weight:    {weight_curve[i]:.0f} lb")
-        print(f"Thrust:    {governing_curve[i]:.0f} lbf")
-        print(f"Actual W/S: {actual_WS[i]:.1f}")
-        break # Stops at the first one it finds
+# Shade feasible region
+# 1. Define the 'floor' (the highest performance curve at each S point)
+thrust_floor = np.maximum.reduce([cruise_curve, turn_curve, dash_curve, strike_curve, climb_curve, ceiling_curve, takeoff_curve])
+
+# 2. Define the 'ceiling' by mapping the Stall Curve (black dashed line) to your S grid
+stall_limit = np.interp(S_grid, stall_curve[np.argsort(stall_curve)], T_grid[np.argsort(stall_curve)])
+
+# 3. Add the fill line (this is the magic part)
 
 plt.figure(figsize=(12, 7))
 
@@ -277,12 +358,16 @@ plt.plot(S_grid, dash_curve, label="Air-to-Air Dash Constraint", linewidth=2)
 plt.plot(S_grid, strike_curve, label="Strike Dash Constraint", linewidth=2)
 plt.plot(S_grid, climb_curve, label="Climb Constraint", linewidth=2)
 plt.plot(S_grid, ceiling_curve, label="Ceiling Constraint", linewidth=2)
+plt.plot(S_grid, takeoff_curve, label="Takeoff Constraint", linewidth=2)
+plt.plot(stall_curve, T_grid, color='black', linestyle='--', linewidth=2, label="Stall Constraint")
+plt.plot(landing_curve, T_grid, color='red', linestyle='-.', linewidth=2, label="Landing Constraint")
 
-plt.plot(S_grid, governing_curve,
-         label="Governing Constraint (Max)",
-         linewidth=3)
+plt.plot(485, 43000, label = 'Design Point', marker = 'o')
 
-plt.plot(485, 41642, label = 'Design Point', marker = 'o')
+plt.fill_between(S_grid, thrust_floor, stall_limit, where=(stall_limit > thrust_floor), color="grey", alpha=0.25, interpolate=True, label="Feasible Region")
+
+plt.xlim(375, 700)
+plt.ylim(0, 70000)
 
 plt.title("Converged T vs. S")
 plt.xlabel("Wing Area S (ft²)")
@@ -291,4 +376,3 @@ plt.grid(True)
 plt.legend(loc="center left", bbox_to_anchor=(1, 0.5))
 plt.tight_layout()
 plt.show()
-
