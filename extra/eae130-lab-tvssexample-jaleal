@@ -117,8 +117,6 @@ final_TOGW, converged, iterations, W0_history = inner_loop_weight(
     num_engines, W_crew, W_payload, T_0
 )
 
-
-
 # Plot the convergence history
 plt.figure(figsize=(10,6))
 plt.plot(W0_history, marker='o')
