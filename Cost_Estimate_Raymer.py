@@ -7,7 +7,7 @@ FTA = 3 # Number of flight-test aircraft
 N = 1 # Number of engines
 K = 520 # Change to K = 436 for Turbojets OR K = 520 for Turbofans
 N_eng = Q * N # Total production quantity times number of engines per aircraft
-T_max = 23249 # Engine maximum thrist (lb)
+T_max = 23249 # Engine maximum thrust (lb)
 M_max = 1.6 # Engine maximum Mach number
 T_turb_inlet = 4000 # Turbine inlet tempearature (approx 3700 - 4100 rankine)
 CPI = 1.43 # 2012 to 2025

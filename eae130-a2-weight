@@ -12,7 +12,7 @@ print("W_crew: " + str(W_crew) + " lb")
 W_payload = total_wt_explosives # lb
 print("W_payload: " + str(W_payload) + " lb")
 
-L_D_max = 21.5
+L_D_max = 9.2              # F15 Comparable Aircraft
 L_D = 0.94 * L_D_max       # Fighter cruise L/D
 c = 0.88                   # lb/(lbf*hr) military turbofan
 V = 500                    # knots
