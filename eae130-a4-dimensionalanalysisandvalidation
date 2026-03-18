@@ -389,7 +389,7 @@ plt.fill_between(
 plt.xlim(400, 800)
 plt.ylim(0, 140000)
 
-plt.title("Converged T vs. S")
+plt.title("T vs. S")
 plt.xlabel("Wing Area S (ft²)")
 plt.ylabel("Required Thrust (lbf)")
 plt.grid(True)
