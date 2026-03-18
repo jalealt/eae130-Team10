@@ -56,7 +56,7 @@ WS_landing_recovery = 0.5*rho_sl*(v_engage+v_wod_recovery)**2*CLmax_la
 WS_recovery = W_to / W_la * WS_landing_recovery * np.ones(300)
 
 # Air to Air Combat Instantaneous Turn Constraint
-v_mn = 380 * 1.688 # ft/s
+v_mn = 400 * 1.688 # ft/s
 q_mn = 0.5*rho_sl*v_mn**2
 n_max = 8
 WS_mn = q_mn*CLmax_mn/n_max*W_to/W_mn * np.ones(300)
@@ -116,7 +116,7 @@ plt.plot(WS, TW_ceiling, label = 'Ceiling', linestyle = '-', linewidth =2)
 plt.plot(WS, TW_climb, label = 'Climb', linestyle = '-', linewidth =2)
 plt.plot(WS, TW_cruise, label = 'Cruise', linestyle = '-', linewidth =2)
 
-plt.plot(97, 0.9, label = 'Design Point', marker = 'o')
+plt.plot(107, 1, label = 'Design Point', marker = 'o')
 
 # Shade feasible region
 feasible = WS <= WS_mn
