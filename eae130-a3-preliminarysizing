@@ -116,7 +116,7 @@ plt.plot(WS, TW_ceiling, label = 'Ceiling', linestyle = '-', linewidth =2)
 plt.plot(WS, TW_climb, label = 'Climb', linestyle = '-', linewidth =2)
 plt.plot(WS, TW_cruise, label = 'Cruise', linestyle = '-', linewidth =2)
 
-plt.plot(95, 0.92, label = 'Design Point', marker = 'o')
+plt.plot(97, 0.9, label = 'Design Point', marker = 'o')
 
 # Shade feasible region
 feasible = WS <= WS_mn
