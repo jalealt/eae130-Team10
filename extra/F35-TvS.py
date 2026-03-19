@@ -42,7 +42,6 @@ def calculate_engine_weight(T_0):
     W_eng_start = 9.33 * (W_eng_dry / 1000)**1.078
     return W_eng_dry + W_eng_oil + W_eng_rev + W_eng_control + W_eng_start
 
-
 # Empty Weight
 def calculate_empty_weight(S_wing, S_ht, S_vt, S_wet_fuselage, TOGW, T_0, num_engines):
     W_wing = S_wing * 9
