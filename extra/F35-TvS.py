@@ -359,7 +359,7 @@ thrust_floor = np.maximum.reduce([
     strike_curve, climb_curve, ceiling_curve 
 ])
 
-instantturn_ceiling = np.interp(S_grid, instantturn_curve, T_grid)
+launch_ceiling = np.interp(S_grid, launch_curve, T_grid)
 
 plt.figure(figsize=(12, 7))
 
@@ -383,7 +383,7 @@ S_shift = 120
 S_grid_shifted = S_grid + S_shift
 
 # Instantaneous turn ceiling evaluated on shifted x-axis
-instantturn_ceiling_shifted = np.interp(S_grid_shifted, S_grid, instantturn_ceiling)
+launch_ceiling_shifted = np.interp(S_grid_shifted, S_grid, launch_ceiling)
 
 # Thrust floor (lower boundary)
 thrust_floor = np.maximum.reduce([
@@ -399,8 +399,8 @@ thrust_floor = np.maximum.reduce([
 plt.fill_between(
     S_grid_shifted,
     thrust_floor,
-    instantturn_ceiling_shifted,
-    where=(instantturn_ceiling_shifted > thrust_floor),
+    launch_ceiling_shifted,
+    where=(launch_ceiling_shifted > thrust_floor),
     interpolate=True,
     color="grey",
     alpha=0.3,
@@ -411,7 +411,7 @@ plt.fill_between(
 plt.xlim(400, 800)
 plt.ylim(0, 140000)
 
-plt.title("Converged T vs. S for F35")
+plt.title("T vs. S for F-35")
 plt.xlabel("Wing Area S (ft²)")
 plt.ylabel("Required Thrust (lbf)")
 plt.grid(True)
