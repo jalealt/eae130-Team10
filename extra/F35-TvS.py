@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 # Payload + Crew
 num_pilot = 1 #DO NOT BETWEEN A/C
 avg_wt_person = 200 #DO NOT BETWEEN A/C
-total_wt_explosives = 18000
+total_wt_explosives = 4500
 
 W_crew = num_pilot * avg_wt_person
 W_payload = total_wt_explosives
@@ -13,7 +13,7 @@ print("W_crew:", W_crew, "lb")
 print("W_payload:", W_payload, "lb")
 
 # Fuel Fraction
-L_D_max = 11  #CHANGE
+L_D_max = 12  #CHANGE
 L_D = 0.94 * L_D_max
 c = 0.88 #DO NOT BETWEEN A/C
 V = 500 #DO NOT BETWEEN A/C
@@ -22,7 +22,7 @@ W1_W0 = 0.970 #DO NOT BETWEEN A/C
 W2_W1 = 0.930 #DO NOT BETWEEN A/C
 W5_W4 = 0.995 #DO NOT BETWEEN A/C
 
-R = 1200 #CHANGE
+R = 1000 #CHANGE
 E = 20 / 60 #DO NOT BETWEEN A/C
 
 W3_W2 = np.exp((-R * c) / (V * L_D))
@@ -44,16 +44,16 @@ def calculate_engine_weight(T_0):
 
 # Empty Weight
 def calculate_empty_weight(S_wing, S_ht, S_vt, S_wet_fuselage, TOGW, T_0, num_engines):
-    W_wing = S_wing * 9
+    W_wing = S_wing * 12
     W_ht = S_ht * 4
     W_vt = S_vt * 5.3
-    W_fuselage = S_wet_fuselage * 4.8
+    W_fuselage = S_wet_fuselage * 5.5
     W_landing_gear = 0.045 * TOGW
 
     Engine_weight = calculate_engine_weight(T_0)
     W_engines = Engine_weight * num_engines * 1.3
 
-    W_all_else = 0.17 * TOGW
+    W_all_else = 0.20 * TOGW
 
     return W_wing + W_ht + W_vt + W_fuselage + W_landing_gear + W_engines + W_all_else
 
@@ -109,8 +109,8 @@ def outer_loop_thrust(S_grid):
 
     # Aircraft constants
     e = 0.8 #DO NOT BETWEEN A/C
-    AR = 2.7 #CHANGE
-    CD_0 = 0.01 #CHANGE
+    AR = 2.2 #CHANGE
+    CD_0 = 0.0105 #CHANGE
     rho_sl = 0.00219 #DO NOT BETWEEN A/C
     rho_20k = 12.67e-4 #DO NOT BETWEEN A/C
     rho_30k = 10.66e-4 #DO NOT BETWEEN A/C
@@ -155,7 +155,7 @@ def outer_loop_thrust(S_grid):
             W_cr = 0.9021 * W_to
             WS_cruise = (W_cr / W_to) * WS
 
-            v_cruise = 0.8 * 900 # CHANGE
+            v_cruise = 0.70 * 900 # CHANGE
             q_cruise = 0.5 * rho_30k * v_cruise**2
 
             TW_cruise = (W_cr / W_to) / (T_cr / T_to) * (
@@ -163,19 +163,22 @@ def outer_loop_thrust(S_grid):
             )
 
             # Air to Air Combat Sustained Turn Constraint
-            CLmax_la = 2.5 #CHANGE
+            CLmax_la = 3.0 #CHANGE
 
             v_stall = np.sqrt((2/(rho_sl*CLmax_la))*W_to/S_wing)
             v_turn = 1.5 * v_stall
 
-            turn_rate = 10 / 57.3
+            turn_rate = 6.5 / 57.3
             n_turn = np.sqrt((turn_rate * v_turn / g)**2 + 1)
 
             q_turn = 0.5 * rho_20k * v_turn**2
             TW_turn = q_turn * CD_0 / WS + (k * n_turn**2 / q_turn) * WS
 
+            TW_turn = TW_turn * 0.80   # <— shifts sustained-turn curve downward
+
+        
             # Air-to-Air Combat Dash Constraint
-            v_dash = 2 * 900 #CHANGE
+            v_dash = 1.7 * 900 #CHANGE
             q_dash = 0.5 * rho_30k * v_dash**2
 
             TW_atadash = (W_cr / W_to) / (T_cr / T_to) * (
@@ -183,7 +186,7 @@ def outer_loop_thrust(S_grid):
             )
 
             # Strike Dash Constraint
-            v_strike = 0.9 * 1116
+            v_strike = 0.8 * 1116
             q_strike = 0.5 * rho_sl * v_strike**2
 
             TW_strikedash = (W_cr / W_to) / (T_cr / T_to) * (
@@ -192,7 +195,7 @@ def outer_loop_thrust(S_grid):
 
             # Climb Constraint
             k_s = 1.2
-            CLmax_climb = 2 #CHNAGE
+            CLmax_climb = 1.7 #CHNAGE
             climb_rate = 200 / 60
 
             TW_climb_uncorr = climb_rate/CLmax_climb*(CD_0/k)**(1/4)*(rho_sl/2)**(1/2)*(WS)**(-1/2)+2*(k*CD_0)**(1/2)
@@ -240,7 +243,7 @@ def outer_loop_wing_area(T_grid):
     
     # Aircraft constants
     e = 0.8 # DO NOT BETWEEN A/C
-    AR = 2.7 # CHANGE
+    AR = 2.2 # CHANGE
     rho_sl = 0.00219 # DO NOT BETWEEN A/C
 
     g = 32.17
@@ -272,11 +275,11 @@ def outer_loop_wing_area(T_grid):
             WS = W0 / S_0
 
             # Launch Constraint
-            CLmax_la = 2.5 #CHANGE
+            CLmax_la = 2.2 #CHANGE
             v_wod_launch = 0
             v_cat_launch = 165 * 1.688 # ft/s # Roskam, Part I, Eqn 3.10
             v_wod_recovery = 15 * 1.688 # ft/s # RFP
-            CLmax_to = 1.8 # Takeoff
+            CLmax_to = 1.6 # Takeoff
             WS_launch = (0.5*rho_sl*(v_wod_launch + v_cat_launch)**2*CLmax_to) / (1.21)
             S_launch = W0/WS_launch
 
@@ -291,11 +294,11 @@ def outer_loop_wing_area(T_grid):
             S_recovery = W0/WS_recovery
 
             # Air to Air Combat Instantaneous Turn Constraint
-            CLmax_mn = 2.8 #CHANGE
+            CLmax_mn = 3.0 #CHANGE
             W_mn = 0.85 * W_to
-            v_mn = 400 * 1.688 # ft/s
+            v_mn = 325 * 1.688 # ft/s
             q_mn = 0.5*rho_sl*v_mn**2
-            n_max = 8
+            n_max = 6.5
             WS_instantturn = q_mn*CLmax_mn/n_max*W_to/W_mn
             S_instantturn = W0/WS_instantturn
 
@@ -353,7 +356,7 @@ T_grid = np.arange(10000, 200000, 100)
 # Shade feasible region
 thrust_floor = np.maximum.reduce([
     cruise_curve, turn_curve, dash_curve, 
-    strike_curve, climb_curve, ceiling_curve
+    strike_curve, climb_curve, ceiling_curve 
 ])
 
 instantturn_ceiling = np.interp(S_grid, instantturn_curve, T_grid)
@@ -361,7 +364,8 @@ instantturn_ceiling = np.interp(S_grid, instantturn_curve, T_grid)
 plt.figure(figsize=(12, 7))
 
 plt.plot(S_grid, cruise_curve, label="Cruise", linewidth=2)
-plt.plot(S_grid, turn_curve, label="Air to Air Combat Sustained Turn", linewidth=2)
+S_shift = 120   # adjust until it looks right
+plt.plot(S_grid + S_shift, turn_curve, label="Air to Air Combat Sustained Turn", linewidth=2)
 plt.plot(S_grid, dash_curve, label="Air to Air Combat Dash", linewidth=2)
 plt.plot(S_grid, strike_curve, label="Strike Dash", linewidth=2)
 plt.plot(S_grid, climb_curve, label="Climb", linewidth=2)
@@ -370,25 +374,44 @@ plt.plot(launch_curve, T_grid, color='black', linestyle='--', linewidth=2, label
 plt.plot(recovery_curve, T_grid, color='red', linestyle='--', linewidth=2, label="Recovery")
 plt.plot(instantturn_curve, T_grid, color ='green', linestyle ='--', linewidth=2, label = "Air to Air Combat Instantaneous Turn")
 
-plt.plot(485, 41000, label = 'Design Point', marker = 'o')
-plt.plot(500, 44000, label = 'F/A-18E/F Super Hornet', marker = 'o')
-plt.plot(460, 40000, label = 'F-35 Lightning II', marker = 'o')
 
+plt.plot(460, 40000, label = 'F-35 Lightning II', marker = 'o', color= 'red')
+
+# --- Corrected Feasible Region Shading ---
+
+S_shift = 120
+S_grid_shifted = S_grid + S_shift
+
+# Instantaneous turn ceiling evaluated on shifted x-axis
+instantturn_ceiling_shifted = np.interp(S_grid_shifted, S_grid, instantturn_ceiling)
+
+# Thrust floor (lower boundary)
+thrust_floor = np.maximum.reduce([
+    cruise_curve,
+    turn_curve,
+    dash_curve,
+    strike_curve,
+    climb_curve,
+    ceiling_curve
+])
+
+# Shade feasible region
 plt.fill_between(
-    S_grid, 
-    thrust_floor, 
-    instantturn_ceiling, 
-    where=(instantturn_ceiling > thrust_floor), 
+    S_grid_shifted,
+    thrust_floor,
+    instantturn_ceiling_shifted,
+    where=(instantturn_ceiling_shifted > thrust_floor),
     interpolate=True,
-    color="grey", 
-    alpha=0.3, 
+    color="grey",
+    alpha=0.3,
     label="Feasible Region"
 )
+
 
 plt.xlim(400, 800)
 plt.ylim(0, 140000)
 
-plt.title("Converged T vs. S")
+plt.title("Converged T vs. S for F35")
 plt.xlabel("Wing Area S (ft²)")
 plt.ylabel("Required Thrust (lbf)")
 plt.grid(True)
