@@ -1,5 +1,72 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
 # Powertrain
-W_engine_mounts = 
-W_firewall =
-W_engine_section = 
-W_air_induction_system =
+N_en = 1 # Number of engines
+T = 41000 # lbf
+N_z = 8
+W_engine_mounts = 0.013*N_en**0.795*T**0.579*N_z
+
+S_fw = 40.89883 # ft^2
+W_firewall = 1.13 * S_fw
+
+W_en = 6422 # lbf
+W_engine_section = 0.01*W_en**0.717*N_en*N_z
+
+K_vg = 1.0 # non-variable geometry
+L_d = 7.78163 # ft
+K_d = 2.6 # more elliptical shape
+L_s = L_d / 3 # ft
+D_e = 3.83 # ft
+W_air_induction_system = 13.29*K_vg*L_d**0.643*K_d**0.182*N_en**1.498*(L_s/L_d)**-0.373*D_e
+
+L_tp = 0.2*18.50 # ft
+W_tailpipe = 3.5*D_e*L_tp*N_en
+
+L_sh = 6 # ft, guess
+W_engine_cooling = 4.55*D_e*L_sh*N_en
+
+W_oil_cooling = 37.82*N_en**1.023
+
+T_e = 41000 # lbf
+W_starter = 0.025*T_e**0.760*N_en**0.72
+
+# Wing
+K_dw =
+K_vs =
+W_dg =
+S_w =
+A =
+tc_root =
+taper_ratio_wing =
+wing_sweep_qc =
+S_csw =
+
+W_wing = 0.0103*K_dw*K_vs*(W_dg*N_z)**0.5*S_w**0.622*A**0.785*tc_root*(
+    1+taper_ratio_wing)**0.05*(np.cos(wing_sweep_qc))**-1.0*S_csw**0.04
+
+# Empennage
+F_w =
+B_h =
+S_ht =
+W_horizontal_tail = 3.316*(1+F_w/B_h)**-2.0*(W_dg*N_z/1000)**0.260*S_ht**0.806
+
+K_rht =
+H_t =
+H_v =
+S_vt =
+M =
+L_t =
+S_r =
+A_vt =
+taper_ratio_tail =
+tail_sweep_qc =
+W_vertical_tail = 0.452*K_rht*(1+H_t/H_v)**0.5*(W_dg*N_z)**0.488*S_vt**0.718*M**0.341*(
+    L_t)**-1.0*(1+S_r/S_vt)**0.348*A_vt**0.223*(1+taper_ratio_tail)**0.25*(np.cos(tail_sweep_qc))**-0.323
+
+# Fuselage
+K_dwf =
+L =
+D =
+W =
+W_fuselage = 0.499*K_dwf*W_dg**0.35*N_z**0.25*L**0.5*D**0.849*W**0.685
