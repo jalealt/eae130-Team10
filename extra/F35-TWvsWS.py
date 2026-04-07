@@ -103,7 +103,7 @@ TW_cruise = (W_cr/W_to)/(T_cr/T_to)*TW_cruise_uncorr
 
 # Create Plot
 plt.figure(figsize=(8,4))
-plt.title('T/W vs. W/S for F35')
+plt.title('T/W vs. W/S for F-35')
 plt.xlabel("W/S $(lb/ft^2)$")
 plt.ylabel("T/W")
 
@@ -117,10 +117,10 @@ plt.plot(WS, TW_ceiling, label = 'Ceiling', linestyle = '-', linewidth =2)
 plt.plot(WS, TW_climb, label = 'Climb', linestyle = '-', linewidth =2)
 plt.plot(WS, TW_cruise, label = 'Cruise', linestyle = '-', linewidth =2)
 
-plt.plot(152.17, 0.61, label = 'F35', marker = 'o')
+plt.plot(152.17, 0.61, label = 'F-35', marker = 'o')
 
 # Shade feasible region
-feasible = WS <= WS_mn
+feasible = WS <= WS_launch
 min_TW = np.maximum.reduce([
     TW_turn,
     TW_atadash
