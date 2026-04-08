@@ -39,13 +39,20 @@ K_vs = 1.0 # constant 40 deg q chord sweep
 W_dg = 31920.62 + 0.5*15610.88 # lbf
 S_w = 529.37186 # ft^2
 A = 3.02266
-tc_root = 0.05
+tc_root = 0.10
 taper_ratio_wing = 0.1128
 wing_sweep_qc = 40
 S_csw = 186.952 # ft^2
+b = 40.00139 # ft
+W_0 = 41562.51 + 17604 # lbf
+W_zf = 41562.51 # lbf
 
-W_wing = 0.0103*K_dw*K_vs*(W_dg*N_z)**0.5*S_w**0.622*A**0.785*tc_root*(
-    1+taper_ratio_wing)**0.05*(np.cos(wing_sweep_qc))**-1.0*S_csw**0.04
+''''
+W_wing = 0.0103*K_dw*K_vs*((W_dg*N_z)**0.5)*S_w**0.622*A**0.785*tc_root*(
+    1+taper_ratio_wing)**0.05*(np.cos(np.deg2rad(wing_sweep_qc)))**(-1.0)*(S_csw**0.04)
+'''
+
+W_wing = 4.22*S_w + 1.642*10**-6*(N_z*b**3*np.sqrt(W_0*W_zf)*(1+2*taper_ratio_wing))/(S_w*tc_root*(np.cos(np.deg2rad(wing_sweep_qc)))**2*(1+taper_ratio_wing))
 
 # Empennage
 F_w = 8.15280 # ft
@@ -64,7 +71,7 @@ A_vt = 3.0571
 taper_ratio_tail = 0.306008
 tail_sweep_qc = 25 # estimate
 W_vertical_tail = 0.452*K_rht*(1+H_t/H_v)**0.5*(W_dg*N_z)**0.488*S_vt**0.718*M**0.341*(
-    L_t)**-1.0*(1+S_r/S_vt)**0.348*A_vt**0.223*(1+taper_ratio_tail)**0.25*(np.cos(tail_sweep_qc))**-0.323
+    L_t)**-1.0*(1+S_r/S_vt)**0.348*A_vt**0.223*(1+taper_ratio_tail)**0.25*(np.cos(np.deg2rad(tail_sweep_qc)))**-0.323
 
 # Fuselage
 K_dwf = 1.0
@@ -103,8 +110,16 @@ W_l = 36000
 W_uav = 2500
 
 # Calculations
-W_landinggear = K_cb * K_tpg * (W_l * N_l)**0.25 * L_m * 0.973
+W_crew = 200
+
+''''
+W_mainlandinggear = K_cb * K_tpg * (W_l * N_l)**0.25 * L_m**0.973
 W_noselanding = (W_l * N_l)**0.29 * L_n**0.5 * N_nw**0.525
+'''
+
+W_landinggear = 0.033*(41562.51 + 17604)
+W_mainlandinggear = 0.85*W_landinggear
+W_noselanding = 0.15*W_landinggear
 
 W_flightcontrols = 36.28 * M**0.003 * S_cs**0.489 * N_s**0.484 * N_c**0.127
 W_enginecontrols = 10.5 * N_en**1.008 * L_ec**0.222
@@ -119,7 +134,7 @@ W_handlinggear = 3.2e-4 * W_dg
 
 # Resulting Sum
 W_adrian = (
-    W_landinggear + W_noselanding + W_flightcontrols + W_enginecontrols + 
+    W_crew + W_mainlandinggear + W_noselanding + W_flightcontrols + W_enginecontrols + 
     W_instruments + W_hydraulics + W_electrical + W_avionics + 
     W_furnishings + W_airconditioning + W_handlinggear + 16000
 )
@@ -127,3 +142,18 @@ W_adrian = (
 total_weight = W_jaleal + W_adrian
 
 print(f"The calculated total empty weight is: {total_weight}")
+print(f"The weight of the powertrain is {W_engine_mounts + W_firewall + W_engine_section + W_engine + W_air_induction_system + W_tailpipe + W_engine_cooling + W_oil_cooling + W_starter}")
+print(f"The weight of the wing is {W_wing} ")
+print(f"The weight of the empennage is {W_horizontal_tail + W_vertical_tail} ")
+print(f"The weight of the HT is {W_horizontal_tail} ")
+print(f"The weight of the VT is {W_vertical_tail} ")
+print(f"The weight of the landing gear is { W_mainlandinggear + W_noselanding} ")
+print(f"The weight of the main landing gear is {W_mainlandinggear} ")
+print(f"The weight of the nose landing gear is {W_noselanding} ")
+print(f"The weight of the fuselage is {W_fuselage} ")
+print(f"The weight of the control system is {W_flightcontrols + W_enginecontrols} ")
+print(f"The weight of the payloads are {16000} ") 
+print(f"The weight of the other systems is {W_furnishings + W_airconditioning + W_handlinggear}")
+print(f"The weight of the instruments + avionics is {W_instruments +  W_avionics} ")
+print(f"The weight of the fuel + oil is {17604} ")
+print(f"The weight of the hydraulic + pneumatic + electrical system is {W_hydraulics + W_electrical} ")
