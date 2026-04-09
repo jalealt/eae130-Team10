@@ -56,8 +56,13 @@ for i in range(0, cruise_segments-1):
     L_D = C_l / (C_D_0 + k * C_l**2)
     W_cruise[i+1] = W_cruise[i] * math.exp(-Delta_R * c_dry / (V * (L_D)))
 
+W_cruise = W_cruise / W_cruise[0]
+
 plt.plot(R_cruise, W_cruise, color='blue', marker='o')
-#plt.show()
+plt.title('Fuel Fraction for Cruise')
+plt.xlabel("Range [nm]")
+plt.ylabel("Weight Fraction")
+plt.show()
 
 W3 = W_cruise[-1]
 W4 = 0.93 * W3
