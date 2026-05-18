@@ -1,13 +1,13 @@
 import numpy as np
 
 ## Inputs
-MTOW = 53300
+MTOW = 62473
 R = 1000
 K = 2.75 # Regional
 AF = 1 # Airline Factor 
 b_year = 2006
 t_year = 2026
-fuel_weight = 16000 # Weight Code
+fuel_weight = 20700 # Weight Code
 pf = 6.84 # Approx Fuel density lb/gal
 po = 7.5 # Approx oil density lb/gal
 Pf = 4 # Approx Fuel Price per gallon
@@ -15,12 +15,12 @@ Po = 30 # Approx Oil Price per gallon
 tb = 3 # Time of mission in hrs (assume 3 hrs)
 CPI = 1.43 # 2012 to 2025
 RL = 108 * CPI # Maintenance hourly rate (Used QC rate from Raymer)
-C_unit = 75500000 # Per Unit Cost
-C_aircraft = 66600000 # Flyaway Cost
+C_unit = 63900000 # Per Unit Cost
+C_aircraft = 59240000 # Flyaway Cost
 C_engine = 20400000 # Engine Cost
-W_empty = 32700 # Aircraft empty weight
+W_empty = 41785 # Aircraft empty weight
 W_engine = 6422 # P135 Weight
-To = 44000 # Thrust
+To = 43000 # Thrust
 n_useful = 25 # Useful years (approx 25 yrs)
 n_engine = 1 # Number of engines
 
@@ -68,6 +68,3 @@ print(f"FOC: ${FOC:,}")
 ## DOC 
 DOC = (COC + FOC) / (1 - C_fin - C_registration)
 print(f"DOC: ${DOC:,}")
-
-
-
