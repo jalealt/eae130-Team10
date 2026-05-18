@@ -1,7 +1,7 @@
 ## INPUTS ##
-W = 46000 # empty weight (lbs)
+W = 41785.17009688243 # empty weight (lbs)
 W_av = 2500 # lbs 
-V = 1040 # Max velocity (kt)
+V = 440.22 # Max velocity (kt)
 Q = 500 # Number to be produced in five years
 FTA = 3 # Number of flight-test aircraft
 N = 1 # Number of engines
@@ -74,12 +74,15 @@ CPI_av = 2.96
 avionics_cost = 2000 * W_av * CPI_av
 
 # Total Engine cost
-C_engine = 3112 *(0.043 * T_max + 243.25 * M_max + 0.969 *T_turb_inlet - 2228) * CPI
+# C_engine = 3112 *(0.043 * T_max + 243.25 * M_max + 0.969 *T_turb_inlet - 2228) * CPI
+C_engine = 20400000 # Cost of P135 P&W 100
 
 # Total price
 C_tot = C_prod_tot + C_rdte_tot
 C_unit = ((C_rdte_tot+C_prod_tot)/Q)
 C_unit_2 = C_unit + C_engine + avionics_cost
+
+C_flyaway = (C_prod_tot/Q) + C_engine + avionics_cost
 
 print(f"Total RDT&E Cost: ${C_rdte_tot:,}")
 print(f"Total Production Cost: ${C_prod_tot:,}")
@@ -87,3 +90,4 @@ print(f"Total Cost of RDT&E and Production Combined: ${C_tot:,}\n")
 print(f"Total Engine Cost: ${C_engine:,}")
 print(f"Per Unit Cost w/o Engine: ${C_unit:,}")
 print(f"Per Unit Cost w Engine: ${C_unit_2:,}")
+print(f"Total Flyaway Cost: ${C_flyaway:,}")
