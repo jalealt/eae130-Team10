@@ -4,7 +4,7 @@ import pandas as pd
 
 num_pilot = 1
 avg_wt_person = 200 # lb
-total_wt_explosives = 10000 # lb
+total_wt_explosives = 6000 # lb
 
 W_crew = num_pilot * (avg_wt_person) # lb
 print("W_crew: " + str(W_crew) + " lb")
@@ -66,3 +66,4 @@ We = We_W0*W0
 print("Empty Weight: " + str(round(We)) + " lb")
 print("Our regression's Empty Weight Fraction (We/W0): " + str(round(We/W0, 3)))
 print("Takeoff Gross Weight: " + str(round(W0)) + " lb")
+print(W0)

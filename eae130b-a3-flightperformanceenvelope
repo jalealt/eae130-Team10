@@ -85,9 +85,69 @@ h_fly = h[flyable]
 v_peak = np.sqrt(-B[flyable][-1] / (2 * A[flyable][-1]))
 h_peak = h_fly[-1]
 
+# ==========================
+# SERVICE CEILING CALC
+# ==========================
+
+ROC_req = 100  # ft/min
+
+V_test = np.linspace(100, 2000, 400)
+
+ROC_max = []
+
+for i in range(len(h)):
+
+    rho_i = density[i]
+    T_i = T_available[i]
+
+    D = (0.5*rho_i*V_test**2*S*CD_0 +
+         (2*k*W**2)/(rho_i*S*V_test**2))
+
+    ROC = (T_i - D) * V_test / W
+
+    ROC_max.append(np.max(ROC) * 60)
+
+ROC_max = np.array(ROC_max)
+
+# find first altitude where requirement is NOT met
+idx = np.where(ROC_max <= ROC_req)[0]
+
+if len(idx) > 0:
+    h_service = h[idx[0]]
+else:
+    h_service = h_peak
+
+h_absolute = h_peak
+h_limit = h_absolute
+
 v_max_final = np.append(v_max, v_peak)
 v_min_final = np.append(v_min_thrust, v_peak)
 h_final = np.append(h_fly, h_peak)
+
+h_limit = h_service
+
+mask = np.interp(h_final, h, h) <= h_service
+
+h_final = h_final[mask]
+v_max_final = v_max_final[mask]
+v_min_final = v_min_final[mask]
+
+# Recompute stall interpolation
+v_stall_interp = np.interp(h_final,h,v)
+
+v_left_boundary = np.maximum(
+                    v_stall_interp,
+                    v_min_final)
+
+stall_is_restrictive = (
+                        v_stall_interp
+                        >=
+                        v_min_final)
+
+thrust_is_restrictive = (
+                         v_min_final
+                         >
+                         v_stall_interp)
 
 # Plot
 # x-axis: airspeed (ft/s)
@@ -103,7 +163,6 @@ plt.plot(v, h, label = 'Stall Boundary', linestyle = '-', linewidth = 2)
 plt.plot(v_min_final, h_final, label = 'Available Thrust Limit (Minimum Speed)', linestyle = '-', linewidth = 2)
 '''
 
-v_stall_interp = np.interp(h_final, h, v)
 v_left_boundary = np.maximum(v_stall_interp, v_min_final)
 
 stall_is_restrictive = v_stall_interp >= v_min_final
@@ -119,8 +178,29 @@ plt.plot(v_min_final[thrust_is_restrictive], h_final[thrust_is_restrictive],
 
 plt.plot(v_max_final, h_final, label = 'Available Thrust Limit (Maximum Speed)', linestyle = '-', linewidth = 2)
 
-plt.fill_betweenx(h_final, v_left_boundary, v_max_final, 
-                 color='gray', alpha=0.3, label='Flyable Envelope')
+mask = h_final <= h_service
+
+# interpolate envelope bounds at service ceiling altitude
+v_left_service = np.interp(h_service, h_final, v_left_boundary)
+v_right_service = np.interp(h_service, h_final, v_max_final)
+
+plt.hlines(
+    h_service,
+    v_left_service,
+    v_right_service,
+    linewidth=2,
+    color='red',
+    label='Service Ceiling'
+)
+
+plt.fill_betweenx(
+    h_final[mask],
+    v_left_boundary[mask],
+    v_max_final[mask],
+    color='gray',
+    alpha=0.3,
+    label='Flyable Envelope'
+)
 
 plt.grid(True)
 plt.legend()

@@ -3,7 +3,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 # Constants
-W_to = 46267 # lbs
+# W_to = 46267 # lbs (old)
+W_to = 62473 # lbs (new)
 W_la = 0.89 * W_to # lbs
 W_cr = 0.9021 * W_to # lbs
 W_mn = 0.85 * W_to # lbs
@@ -34,7 +35,7 @@ v_approach = 1.1 * v_stall # ft/s
 v_engage = 1.05 * v_approach
 
 v_wod_launch = 0
-v_cat_launch = 165 * 1.688 # ft/s # Roskam, Part I, Eqn 3.10
+v_cat_launch = 155 * 1.688 # ft/s # Roskam, Part I, Eqn 3.10
 v_wod_recovery = 15 * 1.688 # ft/s # RFP
 v_turn = 1.5*v_stall # ft/s
 turn_rate = 10 / 57.3 # rad/s
@@ -116,7 +117,7 @@ plt.plot(WS, TW_ceiling, label = 'Ceiling', linestyle = '-', linewidth =2)
 plt.plot(WS, TW_climb, label = 'Climb', linestyle = '-', linewidth =2)
 plt.plot(WS, TW_cruise, label = 'Cruise', linestyle = '-', linewidth =2)
 
-plt.plot(107, 1, label = 'Design Point', marker = 'o')
+plt.plot(107, 0.9, label = 'Design Point', marker = 'o')
 
 # Shade feasible region
 feasible = WS <= WS_mn
