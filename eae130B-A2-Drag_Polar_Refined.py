@@ -18,11 +18,6 @@ mu = atm.dynamic_viscosity[0]
 T = atm.temperature[0]
 P = atm.pressure[0]
 a = atm.speed_of_sound[0]
-#print("Atmospheric properties at Cruise Altitude:")
-#print("Density: ", rho)
-#print("Dynamic Viscosity: ", mu)
-#print("Temperature: ", T)
-#print("Pressure: ", P)
 print("Speed of Sound at Cruise: ", a)
 
 # Cruise @ sea level
@@ -184,8 +179,8 @@ print(CD_landing_gear)
 F_flap = 0.0074 # Flap Form Factor (Slotted Flaps)
 cf = 0.25 * l_wing_cbar # Flap Chord Length
 CD_flap_auto = F_flap * (cf / l_wing_cbar) * (S_flap / S_ref) * (0 - 10) # Flap Drag Coefficient (Raymer 12.61)
-CD_flap_half = F_flap * (cf / l_wing_cbar) * (S_flap / S_ref) * (30 - 10) # Flap Drag Coefficient (Raymer 12.61)
-CD_flap_full = F_flap * (cf / l_wing_cbar) * (S_flap / S_ref) * (45 - 10) # Flap Drag Coefficient (Raymer 12.61)
+CD_flap_half = 2 * F_flap * (cf / l_wing_cbar) * (S_flap / S_ref) * (30 - 10) # Flap Drag Coefficient (Raymer 12.61)
+CD_flap_full = 2 * F_flap * (cf / l_wing_cbar) * (S_flap / S_ref) * (45 - 10) # Flap Drag Coefficient (Raymer 12.61)
 
 # Estimated Total Aircraft Drag Polar (OpenVSP)
 CD_wave_clean = 0.02 # OpenVSP Wave drag
@@ -208,25 +203,16 @@ CD_trim_TO = 0.0003
 CD_trim_land = 0.0002
 
 CD_LP = 0.10 # Estimated Leakage & Protuberance Drag (Raymer Table 12.8) -- 10% of parasite drag
+df = pd.read_csv('/Users/dinoespineli/Documents/1 - My files/EAE130 - Senior Design/Clean_Processed.csv')
 
-CD_clean = (CD0_turb_c + CD_trim_clean)*(1+CD_LP) + (K_clean*(CL_clean - CL_min_drag)**2)                     # Clean, Cruise
-CD_TO_GD = (CD0_turb_c + CD_trim_TO +  (CD_flap_half) + CD_landing_gear)*(1+CD_LP) + (K_TO*(CL_TO - CL_min_drag)**2)          # Takeoff Flaps, Gear Down
-CD_TO_GU = (CD0_turb_c + CD_trim_TO + (CD_flap_half))*(1+CD_LP) + (K_TO*(CL_TO - CL_min_drag)**2)                         # Takeoff Flaps, Gear Up
-CD_L_GD = (CD0_turb_c + CD_trim_land + (CD_flap_full) + CD_landing_gear + CD_arresting_hook + CD_speedbrake)*(1+CD_LP) + (K_landing*(CL_Landing - CL_min_drag)**2)      # Landing Flaps, Gear Down
-CD_L_GU = (CD0_turb_c + CD_trim_land + (CD_flap_full) + CD_arresting_hook + CD_speedbrake)*(1+CD_LP) + (K_landing*(CL_Landing - CL_min_drag)**2)     # Landing Flaps, Gear Up
+#CD_clean = (CD0_turb_c + CD_trim_clean)*(1+CD_LP) + df['CDi_clean'] #(K_clean*(CL_clean - CL_min_drag)**2)                     # Clean, Cruise
+df['CD_total_clean'] = ((CD0_turb_c + CD_trim_clean) * (1 + CD_LP)) + df['CDi_clean']
+df['CD_TO_GD'] = (CD0_turb_c + CD_trim_TO +  (CD_flap_half) + CD_landing_gear)*(1+CD_LP) + df['CDi_TO'] #(K_TO*(CL_TO - CL_min_drag)**2)          # Takeoff Flaps, Gear Down
+df['CD_TO_GU'] = (CD0_turb_c + CD_trim_TO + (CD_flap_half))*(1+CD_LP) + df['CDi_TO'] #(K_TO*(CL_TO - CL_min_drag)**2)                         # Takeoff Flaps, Gear Up
+df['CD_L_GD'] = (CD0_turb_c + CD_trim_land + (CD_flap_full) + CD_landing_gear + CD_arresting_hook + CD_speedbrake)*(1+CD_LP) +  df['CDi_land'] #(K_landing*(CL_Landing - CL_min_drag)**2)      # Landing Flaps, Gear Down
+df['CD_L_GU'] = (CD0_turb_c + CD_trim_land + (CD_flap_full) + CD_arresting_hook + CD_speedbrake)*(1+CD_LP) + df['CDi_land'] #(K_landing*(CL_Landing - CL_min_drag)**2)     # Landing Flaps, Gear Up
 
 # Printing minimum points
-def get_min_cd_point(CD, CL, label):
-    idx = np.argmin(CD)
-    print(f"{label}")
-    print(f"  CD_min = {CD[idx]}")
-    print(f"  CL     = {CL[idx]}\n")
-
-get_min_cd_point(CD_clean, CL_clean, "Clean")
-get_min_cd_point(CD_TO_GU, CL_TO, "Takeoff Flaps + Gear Up")
-get_min_cd_point(CD_TO_GD, CL_TO, "Takeoff Flaps + Gear Down")
-get_min_cd_point(CD_L_GU, CL_Landing, "Landing Flaps + Gear Up")
-get_min_cd_point(CD_L_GD, CL_Landing, "Landing Flaps + Gear Down")
 
 K_test = 1 / (np.pi * AR_clean * 16.33)
 CDi_clean = (K_test*(CL_clean - CL_min_drag)**2) 
@@ -244,15 +230,15 @@ CDi_avg_to = np.mean(CDi_land)
 print("Average CDi (TO):", CDi_avg_to)
 
 # Plots
-plt.plot(CD_clean, CL_clean, label="Clean, Cruise")
-plt.plot(CD_TO_GU, CL_TO, label="Takeoff Flaps + Gear Up")
-plt.plot(CD_TO_GD, CL_TO, label="Takeoff Flaps + Gear Down")
-plt.plot(CD_L_GU, CL_Landing, label="Landing Flaps + Gear Up")
-plt.plot(CD_L_GD, CL_Landing, label="Landing Flaps + Gear Down")
-plt.xlim(0,1)
-plt.xticks(np.arange(0, 1.1, 0.1))
+plt.plot(df['CD_total_clean'], df['Cli_clean'], label="Clean, Cruise")
+plt.plot(df['CD_TO_GU'], df['Cli_TO'], label="Takeoff Flaps + Gear Up")
+plt.plot(df['CD_TO_GD'], df['Cli_TO'], label="Takeoff Flaps + Gear Down")
+plt.plot(df['CD_L_GU'], df['Cli_land'], label="Landing Flaps + Gear Up")
+plt.plot(df['CD_L_GD'], df['Cli_land'], label="Landing Flaps + Gear Down")
+plt.xlim(0,0.5)
+plt.xticks(np.arange(0, 0.5, 0.05))
 plt.yticks(np.arange(-2, 3.5, 0.5))
-plt.ylim(-2,3)
+plt.ylim(-1,2)
 plt.xlabel("$C_D$")
 plt.ylabel("$C_L$")
 plt.title("Drag Polar for Zephyr Nova 1")
@@ -260,16 +246,39 @@ plt.legend()
 plt.grid(True)
 plt.show() 
 
-# Ensure arrays are numpy
-CL_clean = np.array(CL_Landing)
-CD_clean = np.array(CD_L_GD)
+# Function to find CD when CL = 0
+def find_CD_at_CL0(CL_array, CD_array, label):
 
-# Sort by CL (important for interpolation stability)
-sorted_indices = np.argsort(CL_clean)
-CL_clean_sorted = CL_clean[sorted_indices]
-CD_clean_sorted = CD_clean[sorted_indices]
+    # Remove NaNs
+    mask = ~np.isnan(CL_array) & ~np.isnan(CD_array)
 
-# Interpolate CD at CL = 0
-CD_at_CL0_clean = np.interp(0, CL_clean_sorted, CD_clean_sorted)
+    CL = np.array(CL_array[mask])
+    CD = np.array(CD_array[mask])
 
-print(f"CD at CL = 0 (Clean): {CD_at_CL0_clean:.6f}")
+    # Sort by CL
+    sorted_idx = np.argsort(CL)
+
+    CL_sorted = CL[sorted_idx]
+    CD_sorted = CD[sorted_idx]
+
+    # Interpolate
+    CD_at_CL0 = np.interp(0, CL_sorted, CD_sorted)
+
+    print(f"{label}: CD at CL = 0 --> {CD_at_CL0:.6f}")
+
+    # Plot point
+    plt.scatter(CD_at_CL0, 0, s=80)
+
+    return CD_at_CL0
+
+# Find zero-crossings
+find_CD_at_CL0(df['Cli_clean'], df['CD_total_clean'], "Clean")
+
+find_CD_at_CL0(df['Cli_TO'], df['CD_TO_GU'], "Takeoff Gear Up")
+
+find_CD_at_CL0(df['Cli_TO'], df['CD_TO_GD'], "Takeoff Gear Down")
+
+find_CD_at_CL0(df['Cli_land'], df['CD_L_GU'], "Landing Gear Up")
+
+find_CD_at_CL0(df['Cli_land'], df['CD_L_GD'], "Landing Gear Down")
+
