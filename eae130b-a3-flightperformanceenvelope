@@ -202,6 +202,8 @@ plt.fill_betweenx(
     label='Flyable Envelope'
 )
 
+print(h_service)
+
 plt.grid(True)
 plt.legend()
 plt.show()
