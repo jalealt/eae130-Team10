@@ -156,7 +156,8 @@ def outer_loop_thrust(S_grid):
             W_cr = 0.9021 * W_to
             WS_cruise = (W_cr / W_to) * WS
 
-            v_cruise = 0.8 * 993
+            M_cruise = 0.8
+            v_cruise = M_cruise * 993
             q_cruise = 0.5 * rho_30k * v_cruise**2
 
             TW_cruise = (W_cr / W_to) / (T_cr / T_to) * (
@@ -176,7 +177,8 @@ def outer_loop_thrust(S_grid):
             TW_turn = q_turn * CD_0 / WS + (k * n_turn**2 / q_turn) * WS
 
             # Air-to-Air Combat Dash Constraint
-            v_dash = 2 * 993
+            M_dash = 2
+            v_dash = M_dash * 993
             q_dash = 0.5 * rho_30k * v_dash**2
 
             TW_atadash = (W_cr / W_to) / (T_cr / T_to) * (
@@ -184,7 +186,8 @@ def outer_loop_thrust(S_grid):
             )
 
             # Strike Dash Constraint
-            v_strike = 0.9 * 1116
+            M_strike = 0.9
+            v_strike = M_strike * 1116
             q_strike = 0.5 * rho_sl * v_strike**2
 
             TW_strikedash = (W_cr / W_to) / (T_cr / T_to) * (
