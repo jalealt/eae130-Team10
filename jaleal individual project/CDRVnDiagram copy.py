@@ -4,6 +4,12 @@ import math
 import pandas as pd
 import matplotlib.pyplot as plt
 
+from openpyxl import load_workbook
+
+file_path = r"C:\Users\Jaleal\Desktop\EAE 130B\Zephyr One Database.xlsx"
+wb = load_workbook(file_path)
+ws = wb["Database"]
+
 # SECTION 2
 def compute_stall_boundary(V_min, V_max, n_points, rho, CL_max, MTOW, S_ref):
     print("Computing stall boundary...")
@@ -19,11 +25,11 @@ def compute_stall_boundary(V_min, V_max, n_points, rho, CL_max, MTOW, S_ref):
 # Parameters
 V_min = 0          # ft/s, minimum speed
 n_points = 100     # number of points in the speed range
-rho = 0.0023769    # slug/ft^3, air density at conditions of sea level
-CL_max = 1.455     # maximum lift coefficient, takeoff (1.623 for landing)
+rho = ws["B60"].value    # slug/ft^3, air density at conditions of sea level
+CL_max = ws["B68"].value    # maximum lift coefficient, takeoff (1.623 for landing)
 #MTOW = 62473       # lb, maximum takeoff weight (MAX) includes empty weight + full fuel + payload
-MTOW = 45856      # lb, maximum takeoff weight (MIN) includes empty weight + reserve fuel
-S_ref = 530  # ft^2, reference wing area
+MTOW = ws["B28"].value      # lb, maximum takeoff weight (MIN) includes empty weight + reserve fuel
+S_ref = ws["B8"].value  # ft^2, reference wing area
 
 #V_max calculation
 def calculate_Vmax(T_max, MTOW, S_ref, rho, CD0, e, AR):
@@ -55,10 +61,10 @@ def calculate_Vmax(T_max, MTOW, S_ref, rho, CD0, e, AR):
     return V
 
 # V_max parameters
-T_max = 43000      # lb, maximum sea level thrust
-CD0 = 0.00249      # zero-lift drag coefficient
-e = 0.824          # Oswald efficiency factor
-AR = 3.02266       # aspect ratio
+T_max = ws["B12"].value      # lb, maximum sea level thrust
+CD0 = ws["B74"].value    # zero-lift drag coefficient
+e = ws["B88"].value          # Oswald efficiency factor
+AR = ws["B10"].value       # aspect ratio
 
 V_max = calculate_Vmax(T_max, MTOW, S_ref, rho, CD0, e, AR)
 print(f"V_max = {V_max:.1f} ft/s")
@@ -80,11 +86,11 @@ plt.show()
 # SECTION 3
 
 # For positive limit load factor, Table 14.2 has typical values of 6.5 to 9, with RFP calling out n_pos > 7g
-n_pos_limit = 7
+n_pos_limit = ws["B18"].value
 n_pos_limit = np.ones(100)*n_pos_limit
 
 # For negative limit load factor, Table 14.2 has typical values of -3 to -6, RFP doesn't call out min values specifically but chosen as -3
-n_neg_limit = -3.0
+n_neg_limit = ws["B19"].value
 n_neg_limit = np.ones(100)*n_neg_limit
 print(f"Negative limit load factor: {n_neg_limit[0]:.2f}")
 
@@ -174,12 +180,12 @@ def compute_k_g(MTOW, lift_slope, S_ref, c_bar):
     return k_g
 
 # SECTION 8 (OPTIONAL GUST)
-b = 40             # ft, wingspan
+b = ws["B9"].value            # ft, wingspan
 c_bar = S_ref / b  # ft, mean aerodynamic chord
 print(f"Computed mean aerodynamic chord: {c_bar:.3f} ft")
 
 # SECTION 9 (OPTIONAL GUST)
-lift_slope = 6.947     # 1/rad
+lift_slope = ws["B121"].value     # 1/rad
 k_g = compute_k_g(MTOW, lift_slope, S_ref, c_bar)
 
 # SECTION 10 (OPTIONAL GUST)
@@ -439,3 +445,5 @@ for point in points:
     print(f"{point[0]:<10} {point[1]:<45} {point[2]:<18}")
 
 print("="*80)
+
+wb.save(r"C:\Users\Jaleal\Desktop\EAE 130B\Zephyr One Database.xlsx")

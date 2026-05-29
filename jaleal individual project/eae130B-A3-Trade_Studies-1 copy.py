@@ -1,92 +1,98 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-N_en = 1
-T = 41000
-N_z = 8
+from openpyxl import load_workbook
 
-tc_root = 0.10
-wing_sweep_qc = 40
-W_0 = 41562.51 + 17604
-W_zf = 41562.51
+file_path = r"C:\Users\Jaleal\Desktop\EAE 130B\Zephyr One Database.xlsx"
+wb = load_workbook(file_path)
+ws = wb["Database"]
+
+N_en = ws["B14"].value
+T = ws["B12"].value
+N_z = ws["B18"].value
+
+tc_root = ws["B119"].value
+wing_sweep_qc = ws["B118"].value
+W_0 = ws["B11"].value
+W_zf = ws["B29"].value
 
 W_engine_mounts = 0.013*N_en**0.795*T**0.579*N_z
-W_firewall = 1.13 * 40.89883
-W_engine = 6422
+W_firewall = ws["B38"].value
+W_engine = ws["B31"].value
 W_engine_section = 0.01*W_engine**0.717*N_en*N_z
 
-K_vg = 1.0 # non-variable geometry
-L_d = 7.78163 # ft
-K_d = 2.6 # more elliptical shape
+K_vg = ws["B170"].value # non-variable geometry
+L_d = ws["B159"].value # ft
+K_d = ws["B171"].value # more elliptical shape
 L_s = L_d / 3 # ft
-D_e = 3.83 # ft
+D_e = ws["B154"].value # ft
 W_air_induction_system = 13.29*K_vg*L_d**0.643*K_d**0.182*N_en**1.498*(L_s/L_d)**-0.373*D_e
 
-L_tp = 0.2*18.50 # ft
+L_tp = ws["B160"].value # ft
 W_tailpipe = 3.5*D_e*L_tp*N_en
 
-L_sh = 6 # ft, guess
+L_sh = ws["B161"].value # ft, guess
 W_engine_cooling = 4.55*D_e*L_sh*N_en
 
 W_oil_cooling = 37.82*N_en**1.023
 
-T_e = 41000 # lbf
+T_e = ws["B12"].value # lbf
 W_starter = 0.025*T_e**0.760*N_en**0.72
 
 # Constants and Inputs
-K_cb = 1
-K_mc = 1.45
-K_tpg = 1
-K_vsh = 1
-L_a = 30
-L_ec = 10
-L_m = 6
-L_n = 10
-M = 2
-N_c = 1
-N_ci = 1
-N_en = 1
-N_gen = 1
-N_nw = 2
-N_l = 3 * 1.5
-N_s = 6
-N_t = 3
-N_u = 10
-R_kva = 150
-S_cs = 80
-W_dg = 31920 + 0.5 * 16000
-W_l = 36000
-W_uav = 2500
-taper_ratio_wing = 0.1128
+K_cb = ws["B172"].value
+K_mc = ws["B174"].value
+K_tpg = ws["B173"].value
+K_vsh = ws["B126"].value
+L_a = ws["B162"].value
+L_ec = ws["B163"].value
+L_m = ws["B164"].value
+L_n = ws["B165"].value
+M = ws["B102"].value
+N_c = ws["B15"].value
+N_ci = ws["B15"].value
+N_en = ws["B14"].value
+N_gen = ws["B176"].value
+N_nw = ws["B177"].value
+N_l = ws["B178"].value
+N_s = ws["B179"].value
+N_t = ws["B180"].value
+N_u = ws["B181"].value
+R_kva = ws["B182"].value
+S_cs = ws["B116"].value
+W_dg = ws["B37"].value
+W_l = ws["B35"].value
+W_uav = ws["B36"].value
+taper_ratio_wing = ws["B120"].value
 
 # Empennage
-F_w = 8.15280 # ft
-B_h = 16.5 # ft
-S_ht = 133.55921 # ft^2
+F_w = ws["B153"].value # ft
+B_h = ws["B130"].value # ft
+S_ht = ws["B128"].value # ft^2
 W_horizontal_tail = 3.316*(1+F_w/B_h)**-2.0*(W_dg*N_z/1000)**0.260*S_ht**0.806
 
-K_rht = 1.0 # non-rolling horizontal tail
-H_t = 0 # horizontal tail not above fuselage
-H_v = 2 # vertical tail needs to be moved above fuselage
-S_vt = 81.16377 # ft^2
-M = 2.0
-L_t = 19.081635 # ft
-S_r = 31.502 # ft^2
-A_vt = 3.0571
-taper_ratio_tail = 0.306008
-tail_sweep_qc = 25 # estimate
+K_rht = ws["B136"].value # non-rolling horizontal tail
+H_t = ws["B135"].value # horizontal tail not above fuselage
+H_v = ws["B146"].value # vertical tail needs to be moved above fuselage
+S_vt = ws["B138"].value # ft^2
+M = ws["B102"].value
+L_t = ws["B134"].value # ft
+S_r = ws["B140"].value # ft^2
+A_vt = ws["B142"].value
+taper_ratio_tail = ws["B144"].value
+tail_sweep_qc = ws["B145"].value # estimate
 W_vertical_tail = 0.452*K_rht*(1+H_t/H_v)**0.5*(W_dg*N_z)**0.488*S_vt**0.718*M**0.341*(
     L_t)**-1.0*(1+S_r/S_vt)**0.348*A_vt**0.223*(1+taper_ratio_tail)**0.25*(np.cos(np.deg2rad(tail_sweep_qc)))**-0.323
 
 # Fuselage
-K_dwf = 1.0
-L = 45.5 # ft
-D = 5.68673 # ft
-W = 8.66763 # ft
+K_dwf = ws["B125"].value
+L = ws["B149"].value # ft
+D = ws["B150"].value # ft
+W = ws["B151"].value # ft
 W_fuselage = 0.499*K_dwf*W_dg**0.35*N_z**0.25*L**0.5*D**0.849*W**0.685
 
 # Calculations
-W_crew = 200
+W_crew = ws["B32"].value
 
 W_mainlandinggear = K_cb * K_tpg * (W_l * N_l)**0.25 * L_m**0.973
 W_noselanding = (W_l * N_l)**0.29 * L_n**0.5 * N_nw**0.525
@@ -114,9 +120,9 @@ W_adrian = (
 )
 
 # COST MODEL
-Q = 500
-CPI = 1.43
-V = 1040  # velocity
+Q = ws["B51"].value
+CPI = ws["B52"].value
+V = ws["B94"].value  # velocity
 
 R = [115, 118, 98, 108, 1, 1, 1]
 coeff = [4.86, 5.99, 7.37, 0.076, 91.3, 2498, 22.1]
@@ -127,13 +133,13 @@ Q_exp = [0.163, 0.263, 0.641, 0, 0, 0, 0.799]
 rdte = [0, 4, 5]
 prod = [1, 2, 3, 6]
 
-C_engine = 20400000 # Cost of P135 P&W 100
+C_engine = ws["B56"].value # Cost of P135 P&W 100
 
 # Avionics cost
-CPI_av = 2.96
+CPI_av = ws["B53"].value
 avionics_cost = 2000 * W_avionics * CPI_av
 
-W_fuel = 17604
+W_fuel = ws["B30"].value
 
 ## FUNCTION ##
 def compute_outputs(A, S_w):
@@ -265,3 +271,5 @@ plt.title('Cost vs Wing Loading Carpet Plot', fontsize=16)
 
 plt.grid(True, linestyle='--', alpha=0.5)
 plt.show()
+
+wb.save(r"C:\Users\Jaleal\Desktop\EAE 130B\Zephyr One Database.xlsx")

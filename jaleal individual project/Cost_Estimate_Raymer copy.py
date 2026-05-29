@@ -1,16 +1,22 @@
+from openpyxl import load_workbook
+
+file_path = r"C:\Users\Jaleal\Desktop\EAE 130B\Zephyr One Database.xlsx"
+wb = load_workbook(file_path)
+ws = wb["Database"]
+
 ## INPUTS ##
-W = 41785.17009688243 # empty weight (lbs)
-W_av = 2500 # lbs 
-V = 440.22 # Max velocity (kt)
-Q = 500 # Number to be produced in five years
+W = ws["B29"].value # empty weight (lbs)
+W_av = ws["B34"].value # lbs
+V = ws["B94"].value # Max velocity (kt)
+Q = ws["B51"].value # Number to be produced in five years
 FTA = 3 # Number of flight-test aircraft
-N = 1 # Number of engines
+N = ws["B14"].value # Number of engines
 K = 520 # Change to K = 436 for Turbojets OR K = 520 for Turbofans
 N_eng = Q * N # Total production quantity times number of engines per aircraft
-T_max = 23249 # Engine maximum thrust (lb)
-M_max = 1.6 # Engine maximum Mach number
+T_max = ws["B12"].value # Engine maximum thrust (lb)
+M_max = ws["B17"].value # Engine maximum Mach number
 T_turb_inlet = 4000 # Turbine inlet tempearature (approx 3700 - 4100 rankine)
-CPI = 1.43 # 2012 to 2025
+CPI = ws["B52"].value # 2012 to 2025
 
 # 0. Engineering Cost
 # 1. Tooling Cost
@@ -91,3 +97,10 @@ print(f"Total Engine Cost: ${C_engine:,}")
 print(f"Per Unit Cost w/o Engine: ${C_unit:,}")
 print(f"Per Unit Cost w Engine: ${C_unit_2:,}")
 print(f"Total Flyaway Cost: ${C_flyaway:,}")
+
+ws["F51"].value = C_rdte_tot
+ws["F52"].value = C_prod_tot
+ws["B54"].value = C_unit_2
+ws["B55"].value = C_flyaway
+
+wb.save(r"C:\Users\Jaleal\Desktop\EAE 130B\Zephyr One Database.xlsx")

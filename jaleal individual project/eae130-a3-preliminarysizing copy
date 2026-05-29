@@ -2,48 +2,54 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 
+from openpyxl import load_workbook
+
+file_path = r"C:\Users\Jaleal\Desktop\EAE 130B\Zephyr One Database.xlsx"
+wb = load_workbook(file_path)
+ws = wb["Database"]
+
 # Constants
 # W_to = 46267 # lbs (old)
-W_to = 62473 # lbs (new)
+W_to = ws["B11"].value # lbs (new)
 W_la = 0.89 * W_to # lbs
 W_cr = 0.9021 * W_to # lbs
 W_mn = 0.85 * W_to # lbs
 
-T_to = 0.6 * W_to # Raymer pg. 117
+T_to = ws["B12"].value # Raymer pg. 117
 T_cr = 0.5 * T_to # Raymer pg. 122
 
-S_ref = 815.54 # ft^2
-S_wet = 1947.38 # ft^2
+S_ref = ws["B8"].value # ft^2
+S_wet = ws["B114"].value # ft^2
 
-CD_0 = 0.01136
-e = 0.8
-AR = 3.548
-n = 8
+CD_0 = ws["B74"].value
+e = ws["B88"].value
+AR = ws["B10"].value
+n = ws["B18"].value
 
-CLmax_to = 1.8 # Takeoff
-CLmax_la = 2.4 # Landing
-CLmax_clean = 1.4
-CLmax_climb = 1.8
-CLmax_mn = 1.5
+CLmax_to = ws["B68"].value # Takeoff
+CLmax_la = ws["B69"].value # Landing
+CLmax_clean = ws["B70"].value
+CLmax_climb = ws["B71"].value
+CLmax_mn = ws["B72"].value
 
-rho_sl = 0.00219 # slug/ft^3 # Raymer pg. 131
-rho_10k = 17.56*10**-4 # slug/ft^3
-rho_20k = 12.67*10**-4 # slug/ft^3
-rho_30k = 10.66*10**-4 # slug/ft^3 
+rho_sl = ws["B60"].value # slug/ft^3 # Raymer pg. 131
+rho_10k = ws["B61"].value # slug/ft^3
+rho_20k = ws["B62"].value # slug/ft^3
+rho_30k = ws["B63"].value # slug/ft^3 
 v_stall = np.sqrt((2/(rho_sl*CLmax_la))*W_to/S_ref) # ft/s
 v_approach = 1.1 * v_stall # ft/s
 v_engage = 1.05 * v_approach
 
-v_wod_launch = 0
-v_cat_launch = 155 * 1.688 # ft/s # Roskam, Part I, Eqn 3.10
-v_wod_recovery = 15 * 1.688 # ft/s # RFP
+v_wod_launch = ws["B97"].value
+v_cat_launch = ws["B98"].value # ft/s # Roskam, Part I, Eqn 3.10
+v_wod_recovery = ws["B99"].value # ft/s # RFP
 v_turn = 1.5*v_stall # ft/s
-turn_rate = 10 / 57.3 # rad/s
-g = 32.17 # ft/s^2
+turn_rate = ws["B106"].value # rad/s
+g = ws["B24"].value # ft/s^2
 
-k_s = 1.2
+k_s = float(ws["B107"].value)
 v_climb = k_s * v_stall # Roskam pg. 996 Table F.2
-climb_rate = 200/60 # ft/s
+climb_rate = float(ws["B108"].value) # ft/s
 G = climb_rate/v_climb
 k = 1/(np.pi*e*AR)
 
@@ -57,9 +63,9 @@ WS_landing_recovery = 0.5*rho_sl*(v_engage+v_wod_recovery)**2*CLmax_la
 WS_recovery = W_to / W_la * WS_landing_recovery * np.ones(300)
 
 # Air to Air Combat Instantaneous Turn Constraint
-v_mn = 400 * 1.688 # ft/s
+v_mn = ws["B100"].value # ft/s
 q_mn = 0.5*rho_sl*v_mn**2
-n_max = 8
+n_max = ws["B18"].value
 WS_mn = q_mn*CLmax_mn/n_max*W_to/W_mn * np.ones(300)
 
 # Air to Air Combat Sustained Turn Constraint
@@ -71,7 +77,7 @@ TW_turn = q_turn*CD_0/WS + (k*n_turn**2/q_turn)*WS
 # Air to Air Combat Dash Constraint
 # Aircraft is flying at Mach 2.0 at 30k ft according to RFP
 WS_cruise = (W_cr/W_to)*WS
-M_atadash = 2
+M_atadash = ws["B102"].value
 v_atadash = 2*993 # ft/s
 q_atadash = 0.5*rho_30k*(v_atadash)**2
 TW_cruise_atadash = q_atadash*CD_0/WS_cruise + (k/q_atadash)*WS_cruise
@@ -79,7 +85,7 @@ TW_atadash = (W_cr/W_to)/(T_cr/T_to)*TW_cruise_atadash
 
 # Strike Dash Constraint
 # Aircraft is flying at Mach 0.9 at SL according to RFP
-M_strikedash = 0.9
+M_strikedash = ws["B103"].value
 v_strikedash = 0.9*1116 # ft/s
 q_strikedash = 0.5*rho_sl*(v_strikedash)**2
 TW_cruise_strikedash = q_strikedash*CD_0/WS_cruise + (k/q_strikedash)*WS_cruise
@@ -95,7 +101,7 @@ TW_ceiling = 2*np.sqrt(k*CD_0) * np.ones(300)
 
 # Cruise Constraint
 # Assume aircraft is flying at Mach 0.8 at 30k ft
-M_cruise = 0.8
+M_cruise = ws["B104"].value
 v_cruise = 0.8*993 # ft/s
 q_cruise = 0.5*rho_30k*(v_cruise)**2
 TW_cruise_uncorr = q_cruise*CD_0/WS_cruise + k/q_cruise*WS_cruise
@@ -117,10 +123,8 @@ plt.plot(WS, TW_ceiling, label = 'Ceiling', linestyle = '-', linewidth =2)
 plt.plot(WS, TW_climb, label = 'Climb', linestyle = '-', linewidth =2)
 plt.plot(WS, TW_cruise, label = 'Cruise', linestyle = '-', linewidth =2)
 
-plt.plot(107, 0.9, label = 'Design Point', marker = 'o')
-
 # Shade feasible region
-feasible = WS <= WS_mn
+feasible = WS <= WS_launch
 min_TW = np.maximum.reduce([
     TW_turn,
     TW_atadash
@@ -134,7 +138,38 @@ plt.fill_between (
     label = "Feasible Region"
 )
 
+# --- Dynamic Design Point Calculation ---
+# 1. Find the maximum feasible W/S (bounded by the Launch vertical line)
+max_feasible_WS = WS_launch[0]
+
+# 2. Subtract 2 from the max W/S to get your target design W/S
+design_WS = max_feasible_WS - 2
+
+# 3. Find the index in your WS array closest to this target design W/S
+idx_design = (np.abs(WS - design_WS)).argmin()
+actual_design_WS = WS[idx_design]  # This snaps it to your actual grid array
+
+# 4. Find the minimum required T/W at this W/S by looking at the constraining curves
+# (Air to Air Combat Dash is the highest constraint curve at this W/S)
+min_required_TW = np.maximum(TW_turn[idx_design], TW_atadash[idx_design])
+
+# 5. Add your safety margin of +0.05 to the minimum required T/W
+design_TW = min_required_TW + 0.05
+# ----------------------------------------
+
+plt.plot(design_WS, design_TW, label = 'Design Point', marker = 'o')
+
+S = 1/design_WS * ws["B11"].value
+T = design_TW * ws["B11"].value
+
+print(f"Suggested WS: {design_WS:,.2f} lbf/ft^2")
+print(f"Suggested TW: {design_TW:,.2f}")
+
+print(f"Suggested S: {S:,.2f} ft^2")
+print(f"Suggested T: {T:,.2f} lbf")
+
 plt.ylim(0, 3)
 plt.legend(loc='best')
 plt.show()
 
+wb.save(r"C:\Users\Jaleal\Desktop\EAE 130B\Zephyr One Database.xlsx")

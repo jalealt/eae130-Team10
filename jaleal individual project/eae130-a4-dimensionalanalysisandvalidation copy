@@ -1,10 +1,16 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+from openpyxl import load_workbook
+
+file_path = r"C:\Users\Jaleal\Desktop\EAE 130B\Zephyr One Database.xlsx"
+wb = load_workbook(file_path)
+ws = wb["Database"]
+
 # Payload + Crew
-num_pilot = 1
-avg_wt_person = 200
-total_wt_explosives = 4500
+num_pilot = ws["B15"].value
+avg_wt_person = ws["B32"].value
+total_wt_explosives = ws["B33"].value
 
 W_crew = num_pilot * avg_wt_person
 W_payload = total_wt_explosives
@@ -13,17 +19,17 @@ print("W_crew:", W_crew, "lb")
 print("W_payload:", W_payload, "lb")
 
 # Fuel Fraction
-L_D_max = 9.2              # F15 Comparable Aircraft
+L_D_max = ws["B87"].value              # F15 Comparable Aircraft
 L_D = 0.94 * L_D_max
-c = 0.88
-V = 500
+c = ws["B22"].value
+V = ws["B95"].value
 
-W1_W0 = 0.970
-W2_W1 = 0.930
-W5_W4 = 0.995
+W1_W0 = ws["B39"].value
+W2_W1 = ws["B40"].value
+W5_W4 = ws["B41"].value
 
-R = 1000
-E = 20 / 60
+R = ws["B20"].value
+E = ws["B21"].value
 
 W3_W2 = np.exp((-R * c) / (V * L_D))
 W4_W3 = np.exp((-E * c) / (L_D))
@@ -63,9 +69,9 @@ def calculate_empty_weight(S_wing, S_ht, S_vt, S_wet_fuselage, TOGW, T_0, num_en
 def calculate_weight_fraction(R, E, c, V):
     L_D = 9.2
 
-    W1_W0 = 0.970
-    W2_W1 = 0.930
-    W5_W4 = 0.995
+    W1_W0 = ws["B39"].value
+    W2_W1 = ws["B40"].value
+    W5_W4 = ws["B41"].value
 
     W3_W2 = np.exp((-R * c) / (V * L_D))
     W4_W3 = np.exp((-E * c) / (L_D))
@@ -109,14 +115,14 @@ def inner_loop_weight(
 def outer_loop_thrust(S_grid):
 
     # Aircraft constants
-    e = 0.8
-    AR = 3.548
-    CD_0 = 0.01136
-    rho_sl = 0.00219
-    rho_20k = 12.67e-4
-    rho_30k = 10.66e-4
+    e = ws["B88"].value
+    AR = ws["B10"].value
+    CD_0 = ws["B74"].value
+    rho_sl = ws["B60"].value
+    rho_20k = ws["B62"].value
+    rho_30k = ws["B63"].value
 
-    g = 32.17
+    g = ws["B24"].value
 
     k = 1 / (np.pi * e * AR)
 
@@ -149,14 +155,14 @@ def outer_loop_thrust(S_grid):
             WS = W0 / S_wing
 
             W_to = W0
-            T_to = 0.6 * W_to
+            T_to = ws["B12"].value
             T_cr = 0.5 * T_to
 
             # Cruise Constraint
             W_cr = 0.9021 * W_to
             WS_cruise = (W_cr / W_to) * WS
 
-            M_cruise = 0.8
+            M_cruise = ws["B104"].value
             v_cruise = M_cruise * 993
             q_cruise = 0.5 * rho_30k * v_cruise**2
 
@@ -165,19 +171,19 @@ def outer_loop_thrust(S_grid):
             )
 
             # Air to Air Combat Sustained Turn Constraint
-            CLmax_la = 2.4
+            CLmax_la = ws["B69"].value
 
             v_stall = np.sqrt((2/(rho_sl*CLmax_la))*W_to/S_wing)
             v_turn = 1.5 * v_stall
 
-            turn_rate = 10 / 57.3
+            turn_rate = ws["B106"].value
             n_turn = np.sqrt((turn_rate * v_turn / g)**2 + 1)
 
             q_turn = 0.5 * rho_20k * v_turn**2
             TW_turn = q_turn * CD_0 / WS + (k * n_turn**2 / q_turn) * WS
 
             # Air-to-Air Combat Dash Constraint
-            M_dash = 2
+            M_dash = ws["B102"].value
             v_dash = M_dash * 993
             q_dash = 0.5 * rho_30k * v_dash**2
 
@@ -186,7 +192,7 @@ def outer_loop_thrust(S_grid):
             )
 
             # Strike Dash Constraint
-            M_strike = 0.9
+            M_strike = ws["B103"].value
             v_strike = M_strike * 1116
             q_strike = 0.5 * rho_sl * v_strike**2
 
@@ -195,9 +201,9 @@ def outer_loop_thrust(S_grid):
             )
 
             # Climb Constraint
-            k_s = 1.2
-            CLmax_climb = 1.8
-            climb_rate = 200 / 60
+            k_s = ws["B107"].value
+            CLmax_climb = ws["B71"].value
+            climb_rate = ws["B108"].value
 
             TW_climb_uncorr = climb_rate/CLmax_climb*(CD_0/k)**(1/4)*(rho_sl/2)**(1/2)*(WS)**(-1/2)+2*(k*CD_0)**(1/2)
             TW_climb = (1/0.8) * TW_climb_uncorr
@@ -243,11 +249,11 @@ def outer_loop_thrust(S_grid):
 def outer_loop_wing_area(T_grid):
     
     # Aircraft constants
-    e = 0.8
-    AR = 3.548
-    rho_sl = 0.00219
+    e = ws["B88"].value
+    AR = ws["B10"].value
+    rho_sl = ws["B60"].value
 
-    g = 32.17
+    g = ws["B24"].value
 
     k = 1 / (np.pi * e * AR)
 
@@ -276,11 +282,11 @@ def outer_loop_wing_area(T_grid):
             WS = W0 / S_0
 
             # Launch Constraint
-            CLmax_la = 2.4
-            v_wod_launch = 0
-            v_cat_launch = 165 * 1.688 # ft/s # Roskam, Part I, Eqn 3.10
-            v_wod_recovery = 15 * 1.688 # ft/s # RFP
-            CLmax_to = 1.8 # Takeoff
+            CLmax_la = ws["B69"].value
+            v_wod_launch = ws["B97"].value
+            v_cat_launch = ws["B98"].value # ft/s # Roskam, Part I, Eqn 3.10
+            v_wod_recovery = ws["B99"].value # ft/s # RFP
+            CLmax_to = ws["B68"].value # Takeoff
             WS_launch = (0.5*rho_sl*(v_wod_launch + v_cat_launch)**2*CLmax_to) / (1.21)
             S_launch = W0/WS_launch
 
@@ -295,11 +301,11 @@ def outer_loop_wing_area(T_grid):
             S_recovery = W0/WS_recovery
 
             # Air to Air Combat Instantaneous Turn Constraint
-            CLmax_mn = 1.5
+            CLmax_mn = ws["B72"].value
             W_mn = 0.85 * W_to
-            v_mn = 400 * 1.688 # ft/s
+            v_mn = ws["B100"].value # ft/s
             q_mn = 0.5*rho_sl*v_mn**2
-            n_max = 8
+            n_max = ws["B18"].value
             WS_instantturn = q_mn*CLmax_mn/n_max*W_to/W_mn
             S_instantturn = W0/WS_instantturn
 
@@ -331,10 +337,10 @@ def outer_loop_wing_area(T_grid):
            np.array(weight_curve_T))
 
 # Plot Section
-S_ht = 173.50
-S_vt = 135.86
-S_wet_fuselage = 670.82
-num_engines = 1
+S_ht = ws["B128"].value
+S_vt = ws["B138"].value
+S_wet_fuselage = ws["B148"].value
+num_engines = ws["B14"].value
 
 S_grid = np.arange(200, 1200, 3)
 T_grid = np.arange(10000, 200000, 100)
@@ -362,6 +368,29 @@ thrust_floor = np.maximum.reduce([
 
 instantturn_ceiling = np.interp(S_grid, instantturn_curve, T_grid)
 
+# --- Dynamic Design Point Calculation ---
+# 1. Map the Instantaneous Turn ceiling line onto the same S_grid as your thrust floor
+# (This finds the T value on the green dashed line for every wing area step)
+instantturn_ceiling_T = np.interp(S_grid, instantturn_curve, T_grid)
+
+# 2. Find the index where the green dashed ceiling curve crosses above your thrust floor
+# This defines the absolute minimum S allowed inside the grey shaded area
+valid_indices = np.where(instantturn_ceiling_T > thrust_floor)[0]
+min_feasible_idx = valid_indices[0]
+min_feasible_S = S_grid[min_feasible_idx]
+
+# 3. Apply your design targets: +5 ft^2 for S, and look up the floor thrust at that new S
+S_design_target = min_feasible_S + 2
+
+# Find the closest grid element for your targeted wing area
+idx_design = (np.abs(S_grid - S_design_target)).argmin()
+S_design = S_grid[idx_design]
+
+# 4. Get the minimum required thrust at this specific S and add your +100 lbf buffer
+min_required_T = thrust_floor[idx_design]
+T_design = min_required_T + 1000
+# ----------------------------------------
+
 plt.figure(figsize=(12, 7))
 
 plt.plot(launch_curve, T_grid, color='black', linestyle='--', linewidth=2, label="Launch")
@@ -374,7 +403,7 @@ plt.plot(S_grid, ceiling_curve, label="Ceiling", linewidth=2)
 plt.plot(S_grid, climb_curve, label="Climb", linewidth=2)
 plt.plot(S_grid, cruise_curve, label="Cruise", linewidth=2)
 
-plt.plot(485, 41000, label = 'Design Point', marker = 'o')
+plt.plot(S_design, T_design, label = 'Design Point', marker = 'o')
 plt.plot(500, 44000, label = 'F/A-18E/F Super Hornet', marker = 'o')
 plt.plot(460, 40000, label = 'F-35 Lightning II', marker = 'o')
 
@@ -389,7 +418,7 @@ plt.fill_between(
     label="Feasible Region"
 )
 
-plt.xlim(400, 800)
+plt.xlim(420, 800)
 plt.ylim(0, 140000)
 
 plt.title("T vs. S")
@@ -402,9 +431,6 @@ plt.tight_layout()
 plt.show()
 
 # 1. Calculate weight specifically for your Design Point
-S_design = 485
-T_design = 41000
-
 W0_design, _ = inner_loop_weight(
     60000, 
     S_design, S_ht, S_vt, S_wet_fuselage, 
@@ -416,18 +442,17 @@ We_design = calculate_empty_weight(
     W0_design, T_design, num_engines
 )
 
-# Add these lines to your print block
-print(f"Empty Weight (We): {We_design:,.2f} lb")
-print(f"Empty Weight Fraction (We/W0): {We_design / W0_design:.3f}")
-print(f"Fuel Weight (Wf): {W0_design - We_design - W_crew - W_payload:,.2f} lb")
-print("-" * 30)
-
 # Print the results
 print("-" * 30)
 print(f"DESIGN POINT RESULTS")
-print(f"Wing Area (S): {S_design} ft²")
-print(f"Total Thrust (T): {T_design} lbf")
-print(f"Takeoff Gross Weight (W0): {W0_design:,.2f} lb")
+print(f"Empty Weight Fraction (We/W0): {We_design / W0_design:.3f}")
+print(f"Suggested Empty Weight (We): {We_design:,.2f} lb")
+print(f"Suggested Fuel Weight (Wf): {W0_design - We_design - W_crew - W_payload:,.2f} lb")
+print(f"Suggested Wing Area (S): {S_design} ft²")
+print(f"Suggested Total Thrust (T): {T_design} lbf")
+print(f"Suggested Takeoff Gross Weight (W0): {W0_design:,.2f} lb")
 print(f"Thrust-to-Weight Ratio (T/W): {T_design / W0_design:.3f}")
 print(f"Wing Loading (W/S): {W0_design / S_design:.2f} lb/ft²")
 print("-" * 30)
+
+wb.save(r"C:\Users\Jaleal\Desktop\EAE 130B\Zephyr One Database.xlsx")

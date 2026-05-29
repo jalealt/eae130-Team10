@@ -1,8 +1,14 @@
 import numpy as np
 
+from openpyxl import load_workbook
+
+file_path = r"C:\Users\Jaleal\Desktop\EAE 130B\Zephyr One Database.xlsx"
+wb = load_workbook(file_path)
+ws = wb["Database"]
+
 ## Inputs
-MTOW = 62473
-R = 1000
+MTOW = ws["B11"].value
+R = ws["B20"].value
 K = 2.75 # Regional
 AF = 1 # Airline Factor 
 b_year = 2006
@@ -15,14 +21,14 @@ Po = 30 # Approx Oil Price per gallon
 tb = 3 # Time of mission in hrs (assume 3 hrs)
 CPI = 1.43 # 2012 to 2025
 RL = 108 * CPI # Maintenance hourly rate (Used QC rate from Raymer)
-C_unit = 63900000 # Per Unit Cost
-C_aircraft = 59240000 # Flyaway Cost
-C_engine = 20400000 # Engine Cost
-W_empty = 41785 # Aircraft empty weight
-W_engine = 6422 # P135 Weight
-To = 43000 # Thrust
-n_useful = 25 # Useful years (approx 25 yrs)
-n_engine = 1 # Number of engines
+C_unit = ws["B54"].value # Per Unit Cost
+C_aircraft = ws["B55"].value # Flyaway Cost
+C_engine = ws["B56"].value # Engine Cost
+W_empty = ws["B29"].value # Aircraft empty weight
+W_engine = ws["B31"].value # P135 Weight
+To = ws["B12"].value # Thrust
+n_useful = ws["B16"].value # Useful years (approx 25 yrs)
+n_engine = ws["B14"].value # Number of engines
 
 ## Calculating CEF
 b_CEF = 5.17053 + 0.104981 * (b_year - 2006)
@@ -68,3 +74,9 @@ print(f"FOC: ${FOC:,}")
 ## DOC 
 DOC = (COC + FOC) / (1 - C_fin - C_registration)
 print(f"DOC: ${DOC:,}")
+
+ws["F53"].value = COC
+ws["F54"].value = FOC
+ws["F55"].value = DOC
+
+wb.save(r"C:\Users\Jaleal\Desktop\EAE 130B\Zephyr One Database.xlsx")

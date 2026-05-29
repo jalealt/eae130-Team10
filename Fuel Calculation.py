@@ -12,8 +12,6 @@ k = 1 / (math.pi * AR * e)
 
 R = 1000 #nm combat radius
 
-
-
 W0 = 63000 #Start Guess Weight
 c_dry = 0.886 #lbm/hr/lbf
 T_dry = 28000 #lbf

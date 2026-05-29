@@ -1,0 +1,13 @@
+from openpyxl import load_workbook
+
+file_path = r"C:\Users\Jaleal\Desktop\EAE 130B\Zephyr One Database.xlsx"
+wb = load_workbook(file_path)
+ws = wb["Database"]
+
+S = ws["B14"].value
+
+stall_speed = S + 1
+# write output back
+ws["B14"].value = stall_speed
+
+wb.save(r"C:\Users\Jaleal\Desktop\EAE 130B\Zephyr One Database.xlsx")

@@ -1,6 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+from openpyxl import load_workbook
+
+file_path = r"C:\Users\Jaleal\Desktop\EAE 130B\Zephyr One Database.xlsx"
+wb = load_workbook(file_path)
+ws = wb["Database"]
+
 # Density depending on altitude
 # https://www.grc.nasa.gov/www/k-12/airplane/atmosmet.html
 
@@ -49,16 +55,16 @@ h = np.linspace(0,60000,5000)
 density = rho(h)
 
 # Stall boundary
-W = 62473 # lbf
-CL_max = 1.4 # Cruise
-S = 485 # ft^2
+W = ws["B11"].value # lbf
+CL_max = ws["B70"].value # Cruise
+S = ws["B8"].value # ft^2
 
 v = np.sqrt(2*W/(CL_max*density*S))
 
 # Available thrust limit
-CD_0 = 0.038 # Clean
-e = 0.824
-AR = 3
+CD_0 = ws["B74"].value # Clean
+e = ws["B88"].value
+AR = ws["B10"].value
 k = 1/(np.pi*e*AR)
 
 rho_0 = density[0]
@@ -89,7 +95,7 @@ h_peak = h_fly[-1]
 # SERVICE CEILING CALC
 # ==========================
 
-ROC_req = 100  # ft/min
+ROC_req = ws["B109"].value  # ft/min
 
 V_test = np.linspace(100, 2000, 400)
 
@@ -207,3 +213,7 @@ print(h_service)
 plt.grid(True)
 plt.legend()
 plt.show()
+
+ws["F109"].value = h_service
+
+wb.save(r"C:\Users\Jaleal\Desktop\EAE 130B\Zephyr One Database.xlsx")

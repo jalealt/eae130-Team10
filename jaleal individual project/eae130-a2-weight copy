@@ -2,9 +2,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 
-num_pilot = 1
-avg_wt_person = 200 # lb
-total_wt_explosives = 6000 # lb
+from openpyxl import load_workbook
+
+file_path = r"C:\Users\Jaleal\Desktop\EAE 130B\Zephyr One Database.xlsx"
+wb = load_workbook(file_path)
+ws = wb["Database"]
+
+num_pilot = ws["B15"].value
+avg_wt_person = ws["B32"].value # lb
+total_wt_explosives = ws["B33"].value # lb
 
 W_crew = num_pilot * (avg_wt_person) # lb
 print("W_crew: " + str(W_crew) + " lb")
@@ -12,17 +18,17 @@ print("W_crew: " + str(W_crew) + " lb")
 W_payload = total_wt_explosives # lb
 print("W_payload: " + str(W_payload) + " lb")
 
-L_D_max = 9.2              # F15 Comparable Aircraft
+L_D_max = ws["B87"].value              # F15 Comparable Aircraft
 L_D = 0.94 * L_D_max       # Fighter cruise L/D
-c = 0.88                   # lb/(lbf*hr) military turbofan
-V = 500                    # knots
+c = ws["B22"].value                   # lb/(lbf*hr) military turbofan
+V = ws["B96"].value                    # knots
 
-W1_W0 = 0.970  # Takeoff / warm-up
-W2_W1 = 0.930  # Climb
-W5_W4 = 0.995  # Landing
+W1_W0 = ws["B39"].value  # Takeoff / warm-up
+W2_W1 = ws["B40"].value  # Climb
+W5_W4 = ws["B41"].value  # Landing
 
-R = 1000 # nmi (combat radius)
-E = 20/60 # hr loiter
+R = ws["B20"].value # nmi (combat radius)
+E = ws["B21"].value # hr loiter
 
 W3_W2 = np.exp((-R * c) / (V * L_D))  # Cruise condition
 print("Cruise Fuel Fraction (W3/W2): " + str(round(W3_W2, 3)))
@@ -63,7 +69,8 @@ plt.legend(loc='best')
 plt.show()
 
 We = We_W0*W0
-print("Empty Weight: " + str(round(We)) + " lb")
 print("Our regression's Empty Weight Fraction (We/W0): " + str(round(We/W0, 3)))
-print("Takeoff Gross Weight: " + str(round(W0)) + " lb")
-print(W0)
+print("Suggested Empty Weight: " + str(round(We)) + " lb")
+print("Suggested Takeoff Gross Weight: " + str(round(W0)) + " lb")
+
+wb.save(r"C:\Users\Jaleal\Desktop\EAE 130B\Zephyr One Database.xlsx")
