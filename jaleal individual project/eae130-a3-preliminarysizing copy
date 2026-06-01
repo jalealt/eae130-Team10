@@ -43,7 +43,7 @@ v_engage = 1.05 * v_approach
 v_wod_launch = ws["B97"].value
 v_cat_launch = ws["B98"].value # ft/s # Roskam, Part I, Eqn 3.10
 v_wod_recovery = ws["B99"].value # ft/s # RFP
-v_turn = 1.5*v_stall # ft/s
+v_turn = 2*v_stall # ft/s
 turn_rate = ws["B106"].value # rad/s
 g = ws["B24"].value # ft/s^2
 
@@ -154,8 +154,11 @@ actual_design_WS = WS[idx_design]  # This snaps it to your actual grid array
 min_required_TW = np.maximum(TW_turn[idx_design], TW_atadash[idx_design])
 
 # 5. Add your safety margin of +0.05 to the minimum required T/W
-design_TW = min_required_TW + 0.05
+design_TW = min_required_TW + 0.02
 # ----------------------------------------
+
+# design_WS = 135
+# design_TW = 1.07
 
 plt.plot(design_WS, design_TW, label = 'Design Point', marker = 'o')
 

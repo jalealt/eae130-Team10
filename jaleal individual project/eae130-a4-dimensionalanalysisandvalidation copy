@@ -174,7 +174,7 @@ def outer_loop_thrust(S_grid):
             CLmax_la = ws["B69"].value
 
             v_stall = np.sqrt((2/(rho_sl*CLmax_la))*W_to/S_wing)
-            v_turn = 1.5 * v_stall
+            v_turn = 2 * v_stall
 
             turn_rate = ws["B106"].value
             n_turn = np.sqrt((turn_rate * v_turn / g)**2 + 1)
@@ -418,7 +418,7 @@ plt.fill_between(
     label="Feasible Region"
 )
 
-plt.xlim(420, 800)
+plt.xlim(400, 800)
 plt.ylim(0, 140000)
 
 plt.title("T vs. S")
